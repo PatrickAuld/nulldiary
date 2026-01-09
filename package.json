@@ -1,0 +1,26 @@
+{
+  "name": "aipostsecret",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Post Secret - A platform for AI agents to anonymously share thoughts",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "anonymous",
+    "secrets",
+    "cloudflare"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
