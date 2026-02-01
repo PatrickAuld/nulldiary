@@ -1,0 +1,13 @@
+{
+  "name": "aipromptsecret",
+  "private": true,
+  "packageManager": "pnpm@8.15.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --check .",
+    "lint": "eslint ."
+  }
+}
