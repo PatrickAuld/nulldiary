@@ -214,9 +214,9 @@ Use this as an iterative tracker for implementation progress. Each checkpoint sh
 - [x] Add migrations and local dev Docker Compose.
 
 ### Checkpoint 3: Ingestion pipeline
-- [ ] Implement `/s/*` endpoint accepting all verbs.
-- [ ] Build parsing priority and validation logic.
-- [ ] Persist raw events and pending messages.
+- [x] Implement `/s/*` endpoint accepting all verbs.
+- [x] Build parsing priority and validation logic.
+- [x] Persist raw events and pending messages.
 
 ### Checkpoint 4: Admin moderation UI
 - [ ] Scaffold admin app pages.
