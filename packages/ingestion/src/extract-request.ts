@@ -1,8 +1,7 @@
-import type { Context } from "hono";
 import type { RawRequest } from "./types.js";
 
-export async function extractRequest(c: Context): Promise<RawRequest> {
-  const url = new URL(c.req.url);
+export async function extractRequest(request: Request): Promise<RawRequest> {
+  const url = new URL(request.url);
 
   const query: Record<string, string> = {};
   for (const [key, value] of url.searchParams.entries()) {
@@ -10,7 +9,7 @@ export async function extractRequest(c: Context): Promise<RawRequest> {
   }
 
   const headers: Record<string, string> = {};
-  for (const [key, value] of c.req.raw.headers.entries()) {
+  for (const [key, value] of request.headers.entries()) {
     headers[key.toLowerCase()] = value;
   }
 
@@ -18,14 +17,14 @@ export async function extractRequest(c: Context): Promise<RawRequest> {
 
   let body: string | null = null;
   try {
-    body = await c.req.text();
+    body = await request.text();
     if (body === "") body = null;
   } catch {
     // no body
   }
 
   return {
-    method: c.req.method,
+    method: request.method,
     path: url.pathname,
     query,
     headers,

@@ -1,18 +1,21 @@
 {
-  "name": "@aipromptsecret/ingestion",
+  "name": "@aipromptsecret/public",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "start": "node ./dist/server/entry.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@aipromptsecret/db": "workspace:*",
-    "uuidv7": "^1.0.1"
+    "@aipromptsecret/ingestion": "workspace:*",
+    "@astrojs/node": "^8.0.0",
+    "astro": "^4.0.0",
+    "drizzle-orm": "^0.30.10"
   },
   "devDependencies": {
     "typescript": "^5.4.5",

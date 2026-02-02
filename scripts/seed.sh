@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Seed test messages via the ingestion endpoint.
-# Requires the ingestion service to be running on port 3001.
+# Requires the public site to be running on port 4321.
 
-INGESTION_URL="${INGESTION_URL:-http://localhost:3001}"
+INGESTION_URL="${INGESTION_URL:-http://localhost:4321}"
 
 echo "==> Seeding messages via $INGESTION_URL/s/ ..."
 echo ""

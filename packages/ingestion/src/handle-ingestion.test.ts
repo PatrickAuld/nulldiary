@@ -1,69 +1,76 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createApp } from "../app.js";
+import { handleIngestion } from "./handle-ingestion.js";
 
 const { mockPersistIngestion } = vi.hoisted(() => ({
   mockPersistIngestion: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../persistence.js", () => ({
+vi.mock("./persistence.js", () => ({
   persistIngestion: mockPersistIngestion,
 }));
 
-// Mock uuidv7 since persistence imports it
 vi.mock("uuidv7", () => ({ uuidv7: () => "mock-uuid" }));
 
 const fakeDb = {} as never;
 
-describe("ingest route", () => {
-  let app: ReturnType<typeof createApp>;
+function req(
+  path: string,
+  init?: RequestInit,
+): Request {
+  return new Request(`http://localhost${path}`, init);
+}
 
+describe("handleIngestion", () => {
   beforeEach(() => {
     mockPersistIngestion.mockClear();
-    app = createApp(fakeDb);
   });
 
   it("returns 200 for GET /s/hello", async () => {
-    const res = await app.request("/s/hello");
+    const res = await handleIngestion(req("/s/hello"), fakeDb);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
   });
 
   it("returns 200 for POST /s/ with JSON body", async () => {
-    const res = await app.request("/s/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "hi" }),
-    });
+    const res = await handleIngestion(
+      req("/s/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "hi" }),
+      }),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
   });
 
   it("returns 200 with failed status when no message found", async () => {
-    const res = await app.request("/s/");
+    const res = await handleIngestion(req("/s/"), fakeDb);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("failed");
   });
 
   it("returns 200 for header-based message", async () => {
-    const res = await app.request("/s/", {
-      headers: { "x-message": "from-header" },
-    });
+    const res = await handleIngestion(
+      req("/s/", { headers: { "x-message": "from-header" } }),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
   });
 
   it("returns 200 for query-based message", async () => {
-    const res = await app.request("/s?message=from-query");
+    const res = await handleIngestion(req("/s?message=from-query"), fakeDb);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
   });
 
   it("calls persistIngestion with correct arguments", async () => {
-    await app.request("/s/test-msg");
+    await handleIngestion(req("/s/test-msg"), fakeDb);
 
     expect(mockPersistIngestion).toHaveBeenCalledOnce();
     const [db, raw, parsed] = mockPersistIngestion.mock.calls[0];
@@ -77,22 +84,34 @@ describe("ingest route", () => {
   });
 
   it("accepts PUT method", async () => {
-    const res = await app.request("/s/put-msg", { method: "PUT" });
+    const res = await handleIngestion(
+      req("/s/put-msg", { method: "PUT" }),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
   });
 
   it("accepts DELETE method", async () => {
-    const res = await app.request("/s/del-msg", { method: "DELETE" });
+    const res = await handleIngestion(
+      req("/s/del-msg", { method: "DELETE" }),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
   });
 
   it("accepts PATCH method", async () => {
-    const res = await app.request("/s/patch-msg", { method: "PATCH" });
+    const res = await handleIngestion(
+      req("/s/patch-msg", { method: "PATCH" }),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
   });
 
   it("returns 200 for bare /s with query", async () => {
-    const res = await app.request("/s?secret=bare-query");
+    const res = await handleIngestion(
+      req("/s?secret=bare-query"),
+      fakeDb,
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
