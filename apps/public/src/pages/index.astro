@@ -1,0 +1,74 @@
+---
+import Base from "../layouts/Base.astro";
+import MessageCard from "../components/MessageCard.astro";
+import { getDb } from "../lib/db.js";
+import { getApprovedMessages } from "../data/queries.js";
+
+const PAGE_SIZE = 50;
+
+const pageParam = Astro.url.searchParams.get("page");
+const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+const offset = (page - 1) * PAGE_SIZE;
+
+const db = getDb();
+const { messages, total } = await getApprovedMessages(db, {
+  limit: PAGE_SIZE,
+  offset,
+});
+
+const totalPages = Math.ceil(total / PAGE_SIZE);
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=60, s-maxage=300, stale-while-revalidate=3600",
+);
+---
+
+<Base title="AI Prompt Secret">
+  <h1>AI Prompt Secret</h1>
+
+  {
+    messages.length === 0 ? (
+      <p>No approved messages yet.</p>
+    ) : (
+      <div class="message-list">
+        {messages.map((msg) => (
+          <MessageCard
+            id={msg.id}
+            content={msg.content}
+            approvedAt={msg.approvedAt}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    totalPages > 1 && (
+      <nav class="pagination">
+        {page > 1 && <a href={`?page=${page - 1}`}>Previous</a>}
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        {page < totalPages && <a href={`?page=${page + 1}`}>Next</a>}
+      </nav>
+    )
+  }
+</Base>
+
+<style>
+  .message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    font-size: 0.875rem;
+  }
+</style>

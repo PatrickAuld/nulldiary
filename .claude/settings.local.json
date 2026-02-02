@@ -5,7 +5,20 @@
       "Bash(find:*)",
       "Bash(tree:*)",
       "Bash(git:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm --filter @aipromptsecret/admin test:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/dev-up.sh:*)",
+      "Bash(curl:*)",
+      "Bash(DATABASE_URL=\"postgres://aipromptsecret:aipromptsecret@localhost:5432/aipromptsecret\" pnpm --filter @aipromptsecret/ingestion dev:*)",
+      "Bash(DATABASE_URL=\"postgres://aipromptsecret:aipromptsecret@localhost:5432/aipromptsecret\" pnpm --filter @aipromptsecret/admin dev:*)",
+      "Bash(./scripts/seed.sh:*)",
+      "Bash(python3:*)",
+      "Bash(./scripts/dev-down.sh:*)",
+      "Bash(git status:*)",
+      "Bash(pnpm --filter @aipromptsecret/public test:*)"
     ]
   }
 }

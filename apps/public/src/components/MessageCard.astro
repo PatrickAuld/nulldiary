@@ -1,0 +1,47 @@
+---
+interface Props {
+  id: string;
+  content: string;
+  approvedAt: Date | null;
+}
+
+const { id, content, approvedAt } = Astro.props;
+
+const displayDate = approvedAt
+  ? approvedAt.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  : "";
+---
+
+<article class="message-card">
+  <p class="message-content">{content}</p>
+  <footer class="message-meta">
+    {displayDate && <time>{displayDate}</time>}
+    <a href={`/messages/${id}`}>View</a>
+  </footer>
+</article>
+
+<style>
+  .message-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #fff;
+  }
+
+  .message-content {
+    margin-bottom: 0.5rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .message-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+</style>

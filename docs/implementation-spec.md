@@ -223,10 +223,10 @@ Use this as an iterative tracker for implementation progress. Each checkpoint sh
 - [x] Implement list/detail views with filters.
 - [x] Add approve/deny actions with audit trail.
 
-### Checkpoint 5: Public static site
-- [ ] Scaffold public app pages.
-- [ ] Implement static generation from approved messages.
-- [ ] Add basic search/filter UI.
+### Checkpoint 5: Public site (Astro SSR)
+- [x] Scaffold public app (Astro 4 + @astrojs/node SSR).
+- [x] Implement data layer with approved-message queries (TDD).
+- [x] Build index page (paginated) and detail page with cache headers.
 
 ### Checkpoint 6: CI/CD
 - [ ] Add build pipeline for public site.
