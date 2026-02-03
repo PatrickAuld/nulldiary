@@ -7,16 +7,17 @@ import { ModerationForm } from "@/components/ModerationForm";
 export default async function MessageDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const db = getDb();
-  const message = await getMessageById(db, params.id);
+  const message = await getMessageById(db, id);
 
   if (!message) {
     notFound();
   }
 
-  const events = await getIngestionEventsByMessageId(db, params.id);
+  const events = await getIngestionEventsByMessageId(db, id);
 
   return (
     <div>

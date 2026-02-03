@@ -14,14 +14,15 @@ interface SearchParams {
 export default async function MessagesPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const status = (searchParams.status ?? "pending") as "pending" | "approved" | "denied";
-  const search = searchParams.search || undefined;
-  const after = searchParams.after ? new Date(searchParams.after) : undefined;
-  const before = searchParams.before ? new Date(searchParams.before) : undefined;
-  const limit = Number(searchParams.limit ?? 50);
-  const offset = Number(searchParams.offset ?? 0);
+  const sp = await searchParams;
+  const status = (sp.status ?? "pending") as "pending" | "approved" | "denied";
+  const search = sp.search || undefined;
+  const after = sp.after ? new Date(sp.after) : undefined;
+  const before = sp.before ? new Date(sp.before) : undefined;
+  const limit = Number(sp.limit ?? 50);
+  const offset = Number(sp.offset ?? 0);
 
   const { messages, total } = await listMessages(getDb(), {
     status,
@@ -57,11 +58,11 @@ export default async function MessagesPage({
         </div>
         <div>
           <label htmlFor="after">After</label>
-          <input id="after" name="after" type="date" defaultValue={searchParams.after ?? ""} />
+          <input id="after" name="after" type="date" defaultValue={sp.after ?? ""} />
         </div>
         <div>
           <label htmlFor="before">Before</label>
-          <input id="before" name="before" type="date" defaultValue={searchParams.before ?? ""} />
+          <input id="before" name="before" type="date" defaultValue={sp.before ?? ""} />
         </div>
         <div>
           <button type="submit">Filter</button>
