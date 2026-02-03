@@ -13,7 +13,7 @@
   "dependencies": {
     "@nulldiary/db": "workspace:*",
     "@nulldiary/ingestion": "workspace:*",
-    "@astrojs/cloudflare": "^11.0.0",
+    "@astrojs/cloudflare": "^12.6.6",
     "astro": "^4.0.0"
   },
   "devDependencies": {
