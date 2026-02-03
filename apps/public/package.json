@@ -6,14 +6,14 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "start": "node ./dist/server/entry.mjs",
+    "preview": "wrangler pages dev ./dist",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@nulldiary/db": "workspace:*",
     "@nulldiary/ingestion": "workspace:*",
-    "@astrojs/node": "^8.0.0",
+    "@astrojs/cloudflare": "^11.0.0",
     "astro": "^4.0.0",
     "drizzle-orm": "^0.30.10"
   },
