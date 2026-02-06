@@ -28,6 +28,9 @@ Go to your repo's **Settings > Secrets and variables > Actions** and add these t
    - **`nulldiary-admin`**
 2. For each project, go to **Settings > Environment variables** and add:
    - `DATABASE_URL` = the Supabase connection string from step 1
+   - `NEXT_PUBLIC_SUPABASE_URL` = Supabase project URL (e.g. `https://[project-ref].supabase.co`)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Supabase anon public key
+   - `SUPABASE_SERVICE_ROLE_KEY` = Supabase service role key (server-only; only needed for privileged admin-role checks)
 
 ## 4. DNS (Cloudflare)
 
