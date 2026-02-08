@@ -8,7 +8,12 @@ const { mockUuidv7 } = vi.hoisted(() => ({
 vi.mock("uuidv7", () => ({ uuidv7: mockUuidv7 }));
 
 function makeFakeDb() {
-  const ops: Array<{ op: string; table?: unknown; values?: unknown; where?: unknown }> = [];
+  const ops: Array<{
+    op: string;
+    table?: unknown;
+    values?: unknown;
+    where?: unknown;
+  }> = [];
   let selectResult: unknown[] = [];
 
   const whereChain = {
@@ -89,15 +94,21 @@ describe("approveMessage", () => {
     expect(updateOp).toBeTruthy();
 
     const setOp = db.ops.find((op) => op.op === "set");
-    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe("approved");
-    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe("admin@test.com");
-    expect((setOp?.values as Record<string, unknown>).approvedAt).toBeInstanceOf(Date);
+    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe(
+      "approved",
+    );
+    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe(
+      "admin@test.com",
+    );
+    expect(
+      (setOp?.values as Record<string, unknown>).approvedAt,
+    ).toBeInstanceOf(Date);
 
     const insertOp = db.ops.find(
       (op) => op.op === "insert" && op.table === moderationActions,
     );
     expect(insertOp).toBeTruthy();
-    expect((insertOp?.values as Record<string, unknown>)).toMatchObject({
+    expect(insertOp?.values as Record<string, unknown>).toMatchObject({
       id: FIXED_UUID,
       messageId: "msg-1",
       action: "approved",
@@ -147,7 +158,9 @@ describe("approveMessage", () => {
     const insertOp = db.ops.find(
       (op) => op.op === "insert" && op.table === moderationActions,
     );
-    expect((insertOp?.values as Record<string, unknown>).reason).toBeUndefined();
+    expect(
+      (insertOp?.values as Record<string, unknown>).reason,
+    ).toBeUndefined();
   });
 });
 
@@ -165,16 +178,24 @@ describe("denyMessage", () => {
     expect(result).toEqual({ ok: true });
 
     const setOp = db.ops.find((op) => op.op === "set");
-    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe("denied");
-    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe("mod@test.com");
-    expect((setOp?.values as Record<string, unknown>).deniedAt).toBeInstanceOf(Date);
+    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe(
+      "denied",
+    );
+    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe(
+      "mod@test.com",
+    );
+    expect((setOp?.values as Record<string, unknown>).deniedAt).toBeInstanceOf(
+      Date,
+    );
     // deniedAt, not approvedAt
-    expect((setOp?.values as Record<string, unknown>).approvedAt).toBeUndefined();
+    expect(
+      (setOp?.values as Record<string, unknown>).approvedAt,
+    ).toBeUndefined();
 
     const insertOp = db.ops.find(
       (op) => op.op === "insert" && op.table === moderationActions,
     );
-    expect((insertOp?.values as Record<string, unknown>)).toMatchObject({
+    expect(insertOp?.values as Record<string, unknown>).toMatchObject({
       action: "denied",
       actor: "mod@test.com",
       reason: "Spam",

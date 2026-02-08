@@ -13,6 +13,4 @@ export interface ModerationInput {
   reason?: string;
 }
 
-export type ModerationResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type ModerationResult = { ok: true } | { ok: false; error: string };

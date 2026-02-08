@@ -96,10 +96,7 @@ function makeSingleResultDb(resultRows: unknown[] = []) {
 
 describe("getApprovedMessages", () => {
   it("returns approved messages and total count", async () => {
-    const rows = [
-      makeApprovedMessage(),
-      makeApprovedMessage({ id: "msg-2" }),
-    ];
+    const rows = [makeApprovedMessage(), makeApprovedMessage({ id: "msg-2" })];
     const db = makeFakeDb(rows, 2);
 
     const result = await getApprovedMessages(db as never, {});

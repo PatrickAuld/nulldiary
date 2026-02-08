@@ -60,11 +60,21 @@ export default async function MessagesPage({
         </div>
         <div>
           <label htmlFor="after">After</label>
-          <input id="after" name="after" type="date" defaultValue={sp.after ?? ""} />
+          <input
+            id="after"
+            name="after"
+            type="date"
+            defaultValue={sp.after ?? ""}
+          />
         </div>
         <div>
           <label htmlFor="before">Before</label>
-          <input id="before" name="before" type="date" defaultValue={sp.before ?? ""} />
+          <input
+            id="before"
+            name="before"
+            type="date"
+            defaultValue={sp.before ?? ""}
+          />
         </div>
         <div>
           <button type="submit">Filter</button>

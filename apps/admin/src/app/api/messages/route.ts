@@ -27,7 +27,9 @@ export async function GET(req: Request): Promise<Response> {
 
   if (!VALID_STATUSES.has(status)) {
     return NextResponse.json(
-      { error: `Invalid status: ${status}. Must be pending, approved, or denied.` },
+      {
+        error: `Invalid status: ${status}. Must be pending, approved, or denied.`,
+      },
       { status: 400 },
     );
   }

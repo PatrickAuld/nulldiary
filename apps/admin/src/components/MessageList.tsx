@@ -20,7 +20,11 @@ export function MessageList({ messages }: { messages: Message[] }) {
       <tbody>
         {messages.map((msg) => (
           <tr key={msg.id}>
-            <td>{msg.content.length > 100 ? msg.content.slice(0, 100) + "..." : msg.content}</td>
+            <td>
+              {msg.content.length > 100
+                ? msg.content.slice(0, 100) + "..."
+                : msg.content}
+            </td>
             <td>
               <span className="status-badge" data-status={msg.moderationStatus}>
                 {msg.moderationStatus}

@@ -12,10 +12,7 @@ vi.mock("uuidv7", () => ({ uuidv7: () => "mock-uuid" }));
 
 const fakeDb = {} as never;
 
-function req(
-  path: string,
-  init?: RequestInit,
-): Request {
+function req(path: string, init?: RequestInit): Request {
   return new Request(`http://localhost${path}`, init);
 }
 
@@ -108,10 +105,7 @@ describe("handleIngestion", () => {
   });
 
   it("returns 200 for bare /s with query", async () => {
-    const res = await handleIngestion(
-      req("/s?secret=bare-query"),
-      fakeDb,
-    );
+    const res = await handleIngestion(req("/s?secret=bare-query"), fakeDb);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");

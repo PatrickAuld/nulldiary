@@ -28,7 +28,7 @@ export async function getApprovedMessages(
 export async function getApprovedMessageById(
   db: Db,
   id: string,
-): Promise<(typeof messages.$inferSelect) | null> {
+): Promise<typeof messages.$inferSelect | null> {
   const [row] = await db
     .select()
     .from(messages)

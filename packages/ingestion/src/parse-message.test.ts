@@ -18,17 +18,29 @@ describe("parseMessage", () => {
   describe("headers (highest priority)", () => {
     it("extracts x-message header", () => {
       const result = parseMessage(makeRaw({ headers: { "x-message": "hi" } }));
-      expect(result).toEqual({ message: "hi", status: "success", source: "header" });
+      expect(result).toEqual({
+        message: "hi",
+        status: "success",
+        source: "header",
+      });
     });
 
     it("extracts x-secret header", () => {
       const result = parseMessage(makeRaw({ headers: { "x-secret": "shh" } }));
-      expect(result).toEqual({ message: "shh", status: "success", source: "header" });
+      expect(result).toEqual({
+        message: "shh",
+        status: "success",
+        source: "header",
+      });
     });
 
     it("extracts x-prompt header", () => {
       const result = parseMessage(makeRaw({ headers: { "x-prompt": "ask" } }));
-      expect(result).toEqual({ message: "ask", status: "success", source: "header" });
+      expect(result).toEqual({
+        message: "ask",
+        status: "success",
+        source: "header",
+      });
     });
 
     it("prefers x-message over x-secret and x-prompt", () => {
@@ -73,7 +85,11 @@ describe("parseMessage", () => {
           contentType: "application/json",
         }),
       );
-      expect(result).toEqual({ message: "hello", status: "success", source: "body" });
+      expect(result).toEqual({
+        message: "hello",
+        status: "success",
+        source: "body",
+      });
     });
 
     it("extracts secret from JSON body", () => {
@@ -83,7 +99,11 @@ describe("parseMessage", () => {
           contentType: "application/json",
         }),
       );
-      expect(result).toEqual({ message: "hidden", status: "success", source: "body" });
+      expect(result).toEqual({
+        message: "hidden",
+        status: "success",
+        source: "body",
+      });
     });
 
     it("extracts prompt from JSON body", () => {
@@ -93,13 +113,21 @@ describe("parseMessage", () => {
           contentType: "application/json",
         }),
       );
-      expect(result).toEqual({ message: "ask me", status: "success", source: "body" });
+      expect(result).toEqual({
+        message: "ask me",
+        status: "success",
+        source: "body",
+      });
     });
 
     it("prefers message over secret and prompt in JSON body", () => {
       const result = parseMessage(
         makeRaw({
-          body: JSON.stringify({ message: "msg", secret: "sec", prompt: "pmt" }),
+          body: JSON.stringify({
+            message: "msg",
+            secret: "sec",
+            prompt: "pmt",
+          }),
           contentType: "application/json",
         }),
       );
@@ -201,12 +229,20 @@ describe("parseMessage", () => {
   describe("query (third priority)", () => {
     it("extracts message query parameter", () => {
       const result = parseMessage(makeRaw({ query: { message: "qmsg" } }));
-      expect(result).toEqual({ message: "qmsg", status: "success", source: "query" });
+      expect(result).toEqual({
+        message: "qmsg",
+        status: "success",
+        source: "query",
+      });
     });
 
     it("extracts secret query parameter", () => {
       const result = parseMessage(makeRaw({ query: { secret: "qsec" } }));
-      expect(result).toEqual({ message: "qsec", status: "success", source: "query" });
+      expect(result).toEqual({
+        message: "qsec",
+        status: "success",
+        source: "query",
+      });
     });
 
     it("prefers message over secret in query", () => {
@@ -305,9 +341,7 @@ describe("parseMessage", () => {
     });
 
     it("whitespace-only values are treated as empty", () => {
-      const result = parseMessage(
-        makeRaw({ headers: { "x-message": "   " } }),
-      );
+      const result = parseMessage(makeRaw({ headers: { "x-message": "   " } }));
       expect(result).toEqual({ message: null, status: "failed", source: null });
     });
   });

@@ -98,6 +98,7 @@ The ingestion endpoint (`/s/*` in `apps/public/src/pages/s/[...path].ts`) accept
 3. `persistIngestion(Db, RawRequest, ParseResult)` → insert into DB
 
 Message extraction priority (first non-empty match wins):
+
 1. Headers: `x-message`, `x-secret`, `x-prompt`
 2. Body fields (JSON/form/plaintext): `message`, `secret`, `prompt`
 3. Query params: `message`, `secret`

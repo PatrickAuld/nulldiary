@@ -21,7 +21,8 @@ export function MessageDetail({
           </span>
         </p>
         <p>
-          <strong>Created:</strong> {new Date(message.createdAt).toLocaleString()}
+          <strong>Created:</strong>{" "}
+          {new Date(message.createdAt).toLocaleString()}
         </p>
         {message.moderatedBy && (
           <p>
@@ -39,9 +40,16 @@ export function MessageDetail({
           events.map((evt) => (
             <details key={evt.id} style={{ marginBottom: "0.5rem" }}>
               <summary>
-                {evt.method} {evt.path} — {new Date(evt.receivedAt).toLocaleString()}
+                {evt.method} {evt.path} —{" "}
+                {new Date(evt.receivedAt).toLocaleString()}
               </summary>
-              <pre>{JSON.stringify({ headers: evt.headers, query: evt.query, body: evt.body }, null, 2)}</pre>
+              <pre>
+                {JSON.stringify(
+                  { headers: evt.headers, query: evt.query, body: evt.body },
+                  null,
+                  2,
+                )}
+              </pre>
             </details>
           ))
         )}

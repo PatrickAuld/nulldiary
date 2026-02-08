@@ -6,5 +6,7 @@ node_modules
 .next
 .astro
 .turbo
-.dist
+dist
+.vercel
+.wrangler-logs
 coverage

@@ -4,7 +4,9 @@ import { useState } from "react";
 
 export function ModerationForm({ messageId }: { messageId: string }) {
   const [reason, setReason] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleAction(action: "approve" | "deny") {

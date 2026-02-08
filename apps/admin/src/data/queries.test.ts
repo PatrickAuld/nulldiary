@@ -52,13 +52,7 @@ function makeFakeDb(resultRows: unknown[] = [], countResult: number = 0) {
 
   function makeChain(): Record<string, (...args: unknown[]) => unknown> {
     const chain: Record<string, (...args: unknown[]) => unknown> = {};
-    const chainMethods = [
-      "from",
-      "where",
-      "orderBy",
-      "limit",
-      "offset",
-    ];
+    const chainMethods = ["from", "where", "orderBy", "limit", "offset"];
 
     for (const method of chainMethods) {
       chain[method] = (...args: unknown[]) => {

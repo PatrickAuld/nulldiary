@@ -43,7 +43,11 @@ describe("persistIngestion", () => {
   it("inserts message then ingestion_event on success parse", async () => {
     const db = makeFakeDb();
     const raw = makeRaw();
-    const parsed: ParseResult = { message: "hi", status: "success", source: "body" };
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
 
     await persistIngestion(db as never, raw, parsed);
 
@@ -72,7 +76,11 @@ describe("persistIngestion", () => {
   it("inserts only ingestion_event on failed parse (no message row)", async () => {
     const db = makeFakeDb();
     const raw = makeRaw({ body: null, contentType: null });
-    const parsed: ParseResult = { message: null, status: "failed", source: null };
+    const parsed: ParseResult = {
+      message: null,
+      status: "failed",
+      source: null,
+    };
 
     await persistIngestion(db as never, raw, parsed);
 
@@ -124,8 +132,8 @@ describe("persistIngestion", () => {
 
     await persistIngestion(db as never, raw, parsed);
 
-    expect(
-      (db.insertedRows[1].values as Record<string, unknown>).body,
-    ).toBe('{"message":"stored"}');
+    expect((db.insertedRows[1].values as Record<string, unknown>).body).toBe(
+      '{"message":"stored"}',
+    );
   });
 });

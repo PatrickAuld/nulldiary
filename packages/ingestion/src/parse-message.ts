@@ -25,7 +25,10 @@ function fromHeaders(headers: Record<string, string>): ParseResult | null {
   return null;
 }
 
-function fromBody(body: string | null, contentType: string | null): ParseResult | null {
+function fromBody(
+  body: string | null,
+  contentType: string | null,
+): ParseResult | null {
   if (!body || !contentType) return null;
 
   const ct = contentType.toLowerCase();

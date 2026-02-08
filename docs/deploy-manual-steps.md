@@ -15,11 +15,11 @@ These steps must be completed manually after the code changes are pushed. They c
 
 Go to your repo's **Settings > Secrets and variables > Actions** and add these three secrets:
 
-| Secret | Value |
-|--------|-------|
-| `DATABASE_URL` | Supabase connection string from step 1 (port 6543) |
-| `CLOUDFLARE_API_TOKEN` | From [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) — needs **Cloudflare Pages: Edit** permission |
-| `CLOUDFLARE_ACCOUNT_ID` | From the Cloudflare dashboard overview page |
+| Secret                  | Value                                                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | Supabase connection string from step 1 (port 6543)                                                                                          |
+| `CLOUDFLARE_API_TOKEN`  | From [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) — needs **Cloudflare Pages: Edit** permission |
+| `CLOUDFLARE_ACCOUNT_ID` | From the Cloudflare dashboard overview page                                                                                                 |
 
 ## 3. Cloudflare Pages Projects
 
@@ -33,10 +33,10 @@ Go to your repo's **Settings > Secrets and variables > Actions** and add these t
 
 Add the following DNS records in your Cloudflare zone for `nulldiary.com`:
 
-| Type | Name | Target |
-|------|------|--------|
-| CNAME | `@` | `nulldiary-public.pages.dev` |
-| CNAME | `admin` | `nulldiary-admin.pages.dev` |
+| Type  | Name    | Target                       |
+| ----- | ------- | ---------------------------- |
+| CNAME | `@`     | `nulldiary-public.pages.dev` |
+| CNAME | `admin` | `nulldiary-admin.pages.dev`  |
 
 Then add custom domains in each Pages project:
 

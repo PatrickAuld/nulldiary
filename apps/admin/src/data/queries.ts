@@ -1,6 +1,15 @@
 import {
-  eq, ilike, gt, lt, desc, sql, and, type SQL,
-  messages, ingestionEvents, type Db,
+  eq,
+  ilike,
+  gt,
+  lt,
+  desc,
+  sql,
+  and,
+  type SQL,
+  messages,
+  ingestionEvents,
+  type Db,
 } from "@nulldiary/db";
 import type { MessageListFilters } from "./types.js";
 
@@ -46,7 +55,7 @@ export async function listMessages(
 export async function getMessageById(
   db: Db,
   id: string,
-): Promise<(typeof messages.$inferSelect) | null> {
+): Promise<typeof messages.$inferSelect | null> {
   const [row] = await db.select().from(messages).where(eq(messages.id, id));
   return row ?? null;
 }
