@@ -11,3 +11,6 @@ dist
 .wrangler-logs
 coverage
 .open-next
+
+# Python
+.venv/

@@ -3,15 +3,18 @@ import type { RawRequest } from "./types.js";
 export async function extractRequest(request: Request): Promise<RawRequest> {
   const url = new URL(request.url);
 
-  const query: Record<string, string> = {};
+  // Use null-prototype objects to avoid prototype pollution via keys like "__proto__".
+  const query: Record<string, string> = Object.create(null);
   for (const [key, value] of url.searchParams.entries()) {
     query[key] = value;
   }
 
-  const headers: Record<string, string> = {};
-  for (const [key, value] of request.headers.entries()) {
+  const headers: Record<string, string> = Object.create(null);
+  // `Headers.entries()` exists at runtime in many environments, but TypeScript's lib.dom types
+  // do not always include it depending on the target. `forEach` is universally typed.
+  request.headers.forEach((value, key) => {
     headers[key.toLowerCase()] = value;
-  }
+  });
 
   const contentType = headers["content-type"] ?? null;
 
