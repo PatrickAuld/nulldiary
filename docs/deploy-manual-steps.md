@@ -31,7 +31,7 @@ Go to your repo's **Settings > Secrets and variables > Actions** and add these t
 
 ## 4. DNS (Cloudflare)
 
-Add the following DNS records in your Cloudflare zone for `nulldiary.com`:
+Add the following DNS records in your Cloudflare zone for `nulldiary.io`:
 
 | Type  | Name    | Target                       |
 | ----- | ------- | ---------------------------- |
@@ -40,8 +40,8 @@ Add the following DNS records in your Cloudflare zone for `nulldiary.com`:
 
 Then add custom domains in each Pages project:
 
-- `nulldiary-public`: add custom domain `nulldiary.com`
-- `nulldiary-admin`: add custom domain `admin.nulldiary.com`
+- `nulldiary-public`: add custom domain `nulldiary.io`
+- `nulldiary-admin`: add custom domain `admin.nulldiary.io`
 
 ## 5. Push and Verify
 
@@ -53,6 +53,6 @@ Then add custom domains in each Pages project:
 3. Check that **Deploy Public** and **Deploy Admin** workflows complete successfully.
 4. Verify the public site:
    ```bash
-   curl -X POST https://nulldiary.com/s/test -H "x-message: hello"
+   curl -X POST https://nulldiary.io/s/test -H "x-message: hello"
    ```
-5. Verify the admin UI loads at `https://admin.nulldiary.com`.
+5. Verify the admin UI loads at `https://admin.nulldiary.io`.
