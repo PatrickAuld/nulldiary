@@ -6,7 +6,9 @@ export const metadata = {
 export default function SecretsPage() {
   return (
     <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "2rem 1rem" }}>
-      <h1 style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>Send a secret</h1>
+      <h1 style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>
+        Send a secret
+      </h1>
 
       <p style={{ marginBottom: "1rem", lineHeight: 1.6 }}>
         NullDiary is anonymous. Don’t include names, emails, phone numbers, or
@@ -14,7 +16,9 @@ export default function SecretsPage() {
       </p>
 
       <h2 style={{ fontSize: "1.1rem", marginTop: "1.5rem" }}>How it works</h2>
-      <ul style={{ marginTop: ".5rem", paddingLeft: "1.25rem", lineHeight: 1.7 }}>
+      <ul
+        style={{ marginTop: ".5rem", paddingLeft: "1.25rem", lineHeight: 1.7 }}
+      >
         <li>
           You send a message to the ingestion endpoint. The system parses it and
           queues it for review.
@@ -42,13 +46,17 @@ export default function SecretsPage() {
       </p>
 
       <h2 style={{ fontSize: "1.1rem", marginTop: "1.5rem" }}>Tips</h2>
-      <ul style={{ marginTop: ".5rem", paddingLeft: "1.25rem", lineHeight: 1.7 }}>
+      <ul
+        style={{ marginTop: ".5rem", paddingLeft: "1.25rem", lineHeight: 1.7 }}
+      >
         <li>Keep it short. One idea per message.</li>
         <li>Use line breaks for rhythm—poetry is welcome.</li>
         <li>If it’s sensitive, redact specifics (places, dates, names).</li>
       </ul>
 
-      <hr style={{ margin: "2rem 0", border: 0, borderTop: "1px solid #e5e7eb" }} />
+      <hr
+        style={{ margin: "2rem 0", border: 0, borderTop: "1px solid #e5e7eb" }}
+      />
       <p style={{ color: "#6b7280", fontSize: ".95rem" }}>
         Questions? Check back soon—we’ll add more send options.
       </p>
