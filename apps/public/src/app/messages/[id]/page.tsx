@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { getApprovedMessageById } from "@/data/queries";
 
+export const dynamic = "force-dynamic";
+
 export default async function MessagePage({
   params,
 }: {
