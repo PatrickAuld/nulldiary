@@ -31,7 +31,7 @@ export function Poster({
           <div className="meta">
             <span className="pill">anonymous</span>
             <span>
-              {displayDate ? <time>{displayDate}</time> : null} {" "}
+              {displayDate ? <time>{displayDate}</time> : null}{" "}
               <a href={`/messages/${id}`}>open</a>
             </span>
           </div>

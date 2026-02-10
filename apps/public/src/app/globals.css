@@ -10,11 +10,25 @@
   --radius: 16px;
 }
 
-* { box-sizing: border-box; }
-html, body { height: 100%; }
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
   background: var(--bg);
   color: var(--fg);
   line-height: 1.35;
@@ -22,10 +36,19 @@ body {
   text-rendering: geometricPrecision;
 }
 
-::selection { background: rgba(124, 58, 237, 0.35); }
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+}
 
-a { color: inherit; text-decoration: none; }
-a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
 
 .container {
   width: min(100%, var(--maxw));
@@ -38,7 +61,11 @@ a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-under
   top: 0;
   z-index: 10;
   backdrop-filter: blur(10px);
-  background: linear-gradient(to bottom, rgba(11,12,16,0.92), rgba(11,12,16,0.55));
+  background: linear-gradient(
+    to bottom,
+    rgba(11, 12, 16, 0.92),
+    rgba(11, 12, 16, 0.55)
+  );
   border-bottom: 1px solid var(--hairline);
 }
 .header-inner {
@@ -57,7 +84,9 @@ a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-under
   font-size: 14px;
   color: var(--muted);
 }
-.nav a:hover { color: var(--fg); }
+.nav a:hover {
+  color: var(--fg);
+}
 
 .gallery {
   scroll-snap-type: y mandatory;
@@ -80,20 +109,44 @@ a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-under
   inset: -40px;
   opacity: 0.9;
   background:
-    radial-gradient(1200px 600px at 20% 10%, rgba(124, 58, 237, 0.35), transparent 60%),
-    radial-gradient(900px 520px at 80% 90%, rgba(16, 185, 129, 0.18), transparent 55%),
-    radial-gradient(700px 480px at 60% 30%, rgba(59, 130, 246, 0.18), transparent 55%),
-    linear-gradient(180deg, rgba(245,245,245,0.06), rgba(245,245,245,0.00));
+    radial-gradient(
+      1200px 600px at 20% 10%,
+      rgba(124, 58, 237, 0.35),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 520px at 80% 90%,
+      rgba(16, 185, 129, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px 480px at 60% 30%,
+      rgba(59, 130, 246, 0.18),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(245, 245, 245, 0.06), rgba(245, 245, 245, 0));
   filter: saturate(1.2) contrast(1.05);
 }
 
 /* Texture variants (deterministic by seed) */
-.texture-0::before { filter: saturate(1.2) contrast(1.05) hue-rotate(0deg); }
-.texture-1::before { filter: saturate(1.05) contrast(1.15) hue-rotate(18deg); }
-.texture-2::before { filter: saturate(1.15) contrast(1.10) hue-rotate(42deg); }
-.texture-3::before { filter: saturate(1.10) contrast(1.20) hue-rotate(78deg); }
-.texture-4::before { filter: saturate(1.00) contrast(1.18) hue-rotate(120deg); }
-.texture-5::before { filter: saturate(1.25) contrast(1.00) hue-rotate(155deg); }
+.texture-0::before {
+  filter: saturate(1.2) contrast(1.05) hue-rotate(0deg);
+}
+.texture-1::before {
+  filter: saturate(1.05) contrast(1.15) hue-rotate(18deg);
+}
+.texture-2::before {
+  filter: saturate(1.15) contrast(1.1) hue-rotate(42deg);
+}
+.texture-3::before {
+  filter: saturate(1.1) contrast(1.2) hue-rotate(78deg);
+}
+.texture-4::before {
+  filter: saturate(1) contrast(1.18) hue-rotate(120deg);
+}
+.texture-5::before {
+  filter: saturate(1.25) contrast(1) hue-rotate(155deg);
+}
 
 .poster-inner {
   width: min(100%, 96ch);
@@ -105,8 +158,8 @@ a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-under
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   padding: clamp(20px, 3vw, 40px);
-  background: rgba(0,0,0,0.25);
-  box-shadow: 0 20px 70px rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
 }
 
 .message {
