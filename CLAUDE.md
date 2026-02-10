@@ -116,8 +116,7 @@ On success: inserts into `messages` first (UUIDv7 id), then `ingestion_events` w
 ### Deployment
 
 - **Cloudflare Workers**: Both apps deploy via `@opennextjs/cloudflare` build + `wrangler deploy`. Config in `wrangler.jsonc` per app. The `nodejs_compat` flag enables native Node.js builtins (net, tls, etc.) so postgres.js works without webpack hacks.
-- **CI/CD**: GitHub Actions in `.github/workflows/` -- `ci.yml` (lint + test on all pushes), `deploy-public.yml` and `deploy-admin.yml` (migrate + build + deploy on main).
-- **Migrations run on every deploy** before app build, via `pnpm --filter @nulldiary/db db:migrate`.
+- **CI/CD**: GitHub Actions in `.github/workflows/` -- `ci.yml` (lint + test on all pushes), `migrate.yml` (run DB migrations on push to main). App deploys are handled by Cloudflare's own build system.
 
 ## Testing Patterns
 
