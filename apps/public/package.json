@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --port 4321",
     "build": "next build",
-    "preview": "wrangler pages dev .vercel/output/static",
+    "preview": "wrangler dev",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -18,7 +18,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.0",
+    "@opennextjs/cloudflare": "^1.0.0",
     "@types/node": "25.2.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

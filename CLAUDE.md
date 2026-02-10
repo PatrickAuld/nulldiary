@@ -67,8 +67,8 @@ Local `DATABASE_URL`: `postgres://nulldiary:nulldiary@localhost:5432/nulldiary`
 
 pnpm workspace with two apps and three packages:
 
-- **`apps/public`** -- Next.js 15 SSR site (Cloudflare Pages via `@cloudflare/next-on-pages`). Serves approved messages and the ingestion endpoint (`/s/*`).
-- **`apps/admin`** -- Next.js 15 admin moderation UI (Cloudflare Pages via `@cloudflare/next-on-pages`). Auth via Supabase; bypass with `SUPABASE_AUTH_BYPASS=true` for local dev.
+- **`apps/public`** -- Next.js 15 SSR site (Cloudflare Workers via `@opennextjs/cloudflare`). Serves approved messages and the ingestion endpoint (`/s/*`).
+- **`apps/admin`** -- Next.js 15 admin moderation UI (Cloudflare Workers via `@opennextjs/cloudflare`). Auth via Supabase; bypass with `SUPABASE_AUTH_BYPASS=true` for local dev.
 - **`packages/db`** -- Drizzle ORM schema, postgres.js client factory, and migration runner.
 - **`packages/ingestion`** -- Pure-logic ingestion service: request parsing and normalization. No HTTP framework coupling.
 - **`packages/shared`** -- Placeholder for shared types/Zod schemas (currently empty).
@@ -84,7 +84,7 @@ packages/db    → (no internal deps)
 
 ### Database
 
-- **Driver**: `postgres` (postgres.js) -- edge-runtime compatible. Client configured with `max: 1` and `prepare: false` for Supabase transaction pooler (port 6543).
+- **Driver**: `postgres` (postgres.js) -- works natively on Cloudflare Workers with `nodejs_compat`. Client configured with `max: 1` and `prepare: false` for Supabase transaction pooler (port 6543).
 - **Schema**: `packages/db/src/schema.ts` -- three tables (`messages`, `ingestion_events`, `moderation_actions`), three enums.
 - **UUIDv7**: Application-side generation via `uuidv7` package. Generated before insert, not DB defaults.
 - **Migrations**: SQL files in `packages/db/migrations/`, run programmatically via `drizzle-orm/postgres-js/migrator` in `packages/db/src/migrate.ts`.
@@ -110,12 +110,12 @@ On success: inserts into `messages` first (UUIDv7 id), then `ingestion_events` w
 
 - **Data layer** in `apps/admin/src/data/`: `queries.ts` (list/get) and `actions.ts` (approve/deny).
 - **Moderation actions** are transactional: select-for-update, validate pending status, update message, insert audit row, commit.
-- **API routes** at `apps/admin/src/app/api/`. No `export const runtime = "edge"` — `next-on-pages` handles edge routing for Cloudflare builds.
+- **API routes** at `apps/admin/src/app/api/`.
 - **DB singleton**: `apps/admin/src/lib/db.ts` exports `getDb()` that lazily creates client from `DATABASE_URL`.
 
 ### Deployment
 
-- **Cloudflare Pages**: Both apps deploy via `wrangler pages deploy`. Config in `wrangler.toml` per app.
+- **Cloudflare Workers**: Both apps deploy via `@opennextjs/cloudflare` build + `wrangler deploy`. Config in `wrangler.jsonc` per app. The `nodejs_compat` flag enables native Node.js builtins (net, tls, etc.) so postgres.js works without webpack hacks.
 - **CI/CD**: GitHub Actions in `.github/workflows/` -- `ci.yml` (lint + test on all pushes), `deploy-public.yml` and `deploy-admin.yml` (migrate + build + deploy on main).
 - **Migrations run on every deploy** before app build, via `pnpm --filter @nulldiary/db db:migrate`.
 

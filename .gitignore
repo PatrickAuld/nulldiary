@@ -10,3 +10,4 @@ dist
 .vercel
 .wrangler-logs
 coverage
+.open-next

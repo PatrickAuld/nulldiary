@@ -15,6 +15,11 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
     setError("");
 
     const supabase = createClient();
+    if (!supabase) {
+      setError("Supabase is not configured");
+      setLoading(false);
+      return;
+    }
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,

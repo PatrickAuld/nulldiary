@@ -27,7 +27,7 @@ jobs:
       - run: pnpm --filter @nulldiary/db db:migrate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      - run: pnpm --filter @nulldiary/admin build && cd apps/admin && pnpm exec next-on-pages
+      - run: cd apps/admin && pnpm exec opennextjs-cloudflare build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -36,4 +36,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/admin/.vercel/output/static --project-name=nulldiary-admin
+          command: deploy --config apps/admin/wrangler.jsonc
