@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { getMessageById, getIngestionEventsByMessageId } from "@/data/queries";
 import { MessageDetail } from "@/components/MessageDetail";
 import { ModerationForm } from "@/components/ModerationForm";
+import { TagsForm } from "@/components/TagsForm";
 
 export default async function MessageDetailPage({
   params,
@@ -17,7 +18,13 @@ export default async function MessageDetailPage({
     notFound();
   }
 
-  const events = await getIngestionEventsByMessageId(db, id);
+  let events = [];
+  try {
+    events = await getIngestionEventsByMessageId(db, id);
+  } catch {
+    // Avoid hard 500s if ingestion events query fails in production.
+    events = [];
+  }
 
   return (
     <div>
@@ -27,6 +34,8 @@ export default async function MessageDetailPage({
       </p>
 
       <MessageDetail message={message} events={events} />
+
+      <TagsForm messageId={message.id} initialTags={message.tags ?? []} />
 
       {message.moderationStatus === "pending" && (
         <ModerationForm messageId={message.id} />
