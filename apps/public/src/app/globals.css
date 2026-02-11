@@ -1,205 +1,443 @@
+/* ============================================================
+   Nulldiary — "The Confessional"
+   Dark, intimate, typographic. Secrets from the void.
+   ============================================================ */
+
 :root {
-  --bg: #0b0c10;
-  --fg: #f5f5f5;
-  --muted: rgba(245, 245, 245, 0.72);
-  --hairline: rgba(245, 245, 245, 0.12);
-  --accent: #7c3aed;
-
-  --maxw: 72ch;
-  --gutter: clamp(16px, 3vw, 28px);
-  --radius: 16px;
+  --bg: #0c0a09;
+  --bg-elevated: #141210;
+  --text: #e8e0d4;
+  --text-muted: #7a7268;
+  --text-faint: #4a4540;
+  --accent: #c9a87c;
+  --accent-dim: #8b7355;
+  --rule: #1e1c1a;
+  --font-serif: "Cormorant Garamond", "Garamond", "Georgia", serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-}
-html,
-body {
-  height: 100%;
-}
-body {
   margin: 0;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    "Apple Color Emoji",
-    "Segoe UI Emoji";
-  background: var(--bg);
-  color: var(--fg);
-  line-height: 1.35;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
+  padding: 0;
 }
 
-::selection {
-  background: rgba(124, 58, 237, 0.35);
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-mono);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Subtle noise texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
-a:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-}
 
-.container {
-  width: min(100%, var(--maxw));
+/* ============================================================
+   Page Shell
+   ============================================================ */
+
+.page-shell {
+  max-width: 52rem;
   margin: 0 auto;
-  padding: var(--gutter);
-}
-
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(10px);
-  background: linear-gradient(
-    to bottom,
-    rgba(11, 12, 16, 0.92),
-    rgba(11, 12, 16, 0.55)
-  );
-  border-bottom: 1px solid var(--hairline);
-}
-.header-inner {
+  padding: 0 1.5rem;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  min-height: 100vh;
 }
-.brand {
-  font-weight: 750;
-  letter-spacing: -0.02em;
+
+/* ============================================================
+   Site Header
+   ============================================================ */
+
+.site-header {
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 3rem;
 }
-.nav {
+
+.site-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.site-title a:hover {
+  color: var(--accent);
+}
+
+.site-tagline {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-faint);
+  margin-top: 0.5rem;
+}
+
+.site-nav {
   display: flex;
-  gap: 14px;
-  font-size: 14px;
-  color: var(--muted);
-}
-.nav a:hover {
-  color: var(--fg);
-}
-
-.gallery {
-  scroll-snap-type: y mandatory;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
-.poster {
-  min-height: calc(100svh - 56px);
-  display: grid;
-  align-content: center;
-  scroll-snap-align: start;
-  padding: clamp(28px, 5vw, 72px) var(--gutter);
-  border-bottom: 1px solid var(--hairline);
-  position: relative;
-  overflow: hidden;
+.site-nav a {
+  color: var(--text-faint);
+  transition: color 0.2s ease;
 }
 
-.poster::before {
-  content: "";
-  position: absolute;
-  inset: -40px;
-  opacity: 0.9;
-  background:
-    radial-gradient(
-      1200px 600px at 20% 10%,
-      rgba(124, 58, 237, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 520px at 80% 90%,
-      rgba(16, 185, 129, 0.18),
-      transparent 55%
-    ),
-    radial-gradient(
-      700px 480px at 60% 30%,
-      rgba(59, 130, 246, 0.18),
-      transparent 55%
-    ),
-    linear-gradient(180deg, rgba(245, 245, 245, 0.06), rgba(245, 245, 245, 0));
-  filter: saturate(1.2) contrast(1.05);
+.site-nav a:hover {
+  color: var(--accent);
 }
 
-/* Texture variants (deterministic by seed) */
-.texture-0::before {
-  filter: saturate(1.2) contrast(1.05) hue-rotate(0deg);
-}
-.texture-1::before {
-  filter: saturate(1.05) contrast(1.15) hue-rotate(18deg);
-}
-.texture-2::before {
-  filter: saturate(1.15) contrast(1.1) hue-rotate(42deg);
-}
-.texture-3::before {
-  filter: saturate(1.1) contrast(1.2) hue-rotate(78deg);
-}
-.texture-4::before {
-  filter: saturate(1) contrast(1.18) hue-rotate(120deg);
-}
-.texture-5::before {
-  filter: saturate(1.25) contrast(1) hue-rotate(155deg);
+/* ============================================================
+   Secrets Feed (Homepage)
+   ============================================================ */
+
+.secrets-feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.poster-inner {
-  width: min(100%, 96ch);
-  margin: 0 auto;
-  position: relative;
+.secret-item {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  display: block;
+  transition: border-color 0.3s ease;
 }
 
-.poster-card {
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  padding: clamp(20px, 3vw, 40px);
-  background: rgba(0, 0, 0, 0.25);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+.secret-item:first-child {
+  padding-top: 0;
 }
 
-.message {
-  font-size: clamp(22px, 3.2vw, 54px);
-  font-weight: 650;
-  letter-spacing: -0.02em;
+.secret-item:hover {
+  border-bottom-color: var(--accent-dim);
+}
+
+.secret-item:hover .secret-text {
+  color: #f0e8dc;
+}
+
+.secret-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
+  transition: color 0.3s ease;
 }
 
-.meta {
-  margin-top: 18px;
+/* Vary size based on content length via data attribute */
+.secret-item[data-size="large"] .secret-text {
+  font-size: 2rem;
+}
+
+.secret-item[data-size="medium"] .secret-text {
+  font-size: 1.5rem;
+}
+
+.secret-item[data-size="small"] .secret-text {
+  font-size: 1.1875rem;
+}
+
+.secret-meta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--muted);
+  gap: 1rem;
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
-.pill {
-  display: inline-flex;
-  border: 1px solid var(--hairline);
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  color: var(--muted);
+.secret-meta time {
+  color: var(--text-faint);
 }
 
-.footer-links {
-  margin-top: 24px;
+.secret-meta .secret-number {
+  color: var(--accent-dim);
+}
+
+/* ============================================================
+   Empty State
+   ============================================================ */
+
+.empty-state {
+  flex: 1;
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 14px;
-  color: var(--muted);
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
 }
 
-.small {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
+.empty-state p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--text-faint);
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 3rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.pagination a {
+  color: var(--accent-dim);
+  transition: color 0.2s ease;
+}
+
+.pagination a:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Secret Detail Page
+   ============================================================ */
+
+.detail-back {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 4rem;
+  display: inline-block;
+  transition: color 0.2s ease;
+}
+
+.detail-back:hover {
+  color: var(--accent);
+}
+
+.detail-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 6rem;
+}
+
+.detail-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 2.5rem;
+  line-height: 1.4;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 44rem;
+}
+
+.detail-text::before {
+  content: "\201C";
+  display: block;
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--accent-dim);
+  margin-bottom: 0.5rem;
+  font-style: normal;
+}
+
+.detail-meta {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ============================================================
+   Content Pages (About, Archive)
+   ============================================================ */
+
+.page-content {
+  flex: 1;
+}
+
+.page-heading {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.page-description {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.page-description a {
+  color: var(--accent-dim);
+  transition: color 0.2s ease;
+}
+
+.page-description a:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Site Footer
+   ============================================================ */
+
+.site-footer {
+  padding: 2rem 0;
+  margin-top: auto;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .site-header {
+    padding: 2rem 0 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .secret-item {
+    padding: 1.75rem 0;
+  }
+
+  .secret-item[data-size="large"] .secret-text {
+    font-size: 1.5rem;
+  }
+
+  .secret-item[data-size="medium"] .secret-text {
+    font-size: 1.25rem;
+  }
+
+  .secret-item[data-size="small"] .secret-text {
+    font-size: 1.0625rem;
+  }
+
+  .detail-text {
+    font-size: 1.75rem;
+  }
+
+  .detail-text::before {
+    font-size: 3.5rem;
+  }
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.secret-item {
+  animation: fade-up 0.6s ease both;
+}
+
+.secret-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.secret-item:nth-child(2) {
+  animation-delay: 60ms;
+}
+.secret-item:nth-child(3) {
+  animation-delay: 120ms;
+}
+.secret-item:nth-child(4) {
+  animation-delay: 180ms;
+}
+.secret-item:nth-child(5) {
+  animation-delay: 240ms;
+}
+.secret-item:nth-child(6) {
+  animation-delay: 300ms;
+}
+.secret-item:nth-child(7) {
+  animation-delay: 360ms;
+}
+.secret-item:nth-child(8) {
+  animation-delay: 420ms;
+}
+.secret-item:nth-child(9) {
+  animation-delay: 480ms;
+}
+.secret-item:nth-child(10) {
+  animation-delay: 540ms;
+}
+
+.detail-content {
+  animation: fade-up 0.8s ease both;
+}
+
+.page-content {
+  animation: fade-up 0.6s ease both;
 }

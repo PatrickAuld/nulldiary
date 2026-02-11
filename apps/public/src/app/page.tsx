@@ -1,40 +1,74 @@
 import { getDb } from "@/lib/db";
-import { getFeaturedMessages } from "@/data/queries";
-import { SiteHeader } from "@/components/SiteHeader";
-import { Poster } from "@/components/Poster";
+import { getApprovedMessages } from "@/data/queries";
 
-export const dynamic = "force-dynamic";
+const PAGE_SIZE = 50;
 
-export default async function HomePage() {
+function secretSize(content: string): "large" | "medium" | "small" {
+  if (content.length <= 80) return "large";
+  if (content.length <= 200) return "medium";
+  return "small";
+}
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
+
   const db = getDb();
-  const featured = await getFeaturedMessages(db, { limit: 18 });
+  const { messages, total } = await getApprovedMessages(db, {
+    limit: PAGE_SIZE,
+    offset,
+  });
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  if (messages.length === 0) {
+    return (
+      <div className="empty-state">
+        <p>The void is listening&hellip;</p>
+      </div>
+    );
+  }
 
   return (
     <>
-      <a id="top" />
-      <SiteHeader />
+      {messages.map((msg, i) => (
+        <a
+          key={msg.id}
+          href={`/messages/${msg.id}`}
+          className="secret-item"
+          data-size={secretSize(msg.content)}
+        >
+          <p className="secret-text">{msg.content}</p>
+          <div className="secret-meta">
+            <span className="secret-number">
+              No. {String(total - offset - i).padStart(3, "0")}
+            </span>
+            {msg.approvedAt && <time>{formatDate(msg.approvedAt)}</time>}
+          </div>
+        </a>
+      ))}
 
-      {featured.length === 0 ? (
-        <div className="container">
-          <p className="small">
-            No featured messages yet. Add tag <code>featured</code> to approved
-            messages to populate the gallery.
-          </p>
-          <p className="small">
-            You can still browse the <a href="/archive">archive</a>.
-          </p>
-        </div>
-      ) : (
-        <main className="gallery">
-          {featured.map((m) => (
-            <Poster
-              key={m.id}
-              id={m.id}
-              content={m.content}
-              approvedAt={m.approvedAt ?? null}
-            />
-          ))}
-        </main>
+      {totalPages > 1 && (
+        <nav className="pagination">
+          {page > 1 && <a href={`?page=${page - 1}`}>&larr; Newer</a>}
+          <span>
+            {page} / {totalPages}
+          </span>
+          {page < totalPages && <a href={`?page=${page + 1}`}>Older &rarr;</a>}
+        </nav>
       )}
     </>
   );

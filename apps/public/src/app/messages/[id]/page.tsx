@@ -28,32 +28,18 @@ export default async function MessagePage({
 
   return (
     <>
-      <nav style={{ marginBottom: "1.5rem", fontSize: "0.875rem" }}>
-        <a href="/">&larr; All messages</a>
-      </nav>
+      <a href="/" className="detail-back">
+        &larr; All confessions
+      </a>
 
-      <article
-        style={{
-          padding: "1.5rem",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.5rem",
-          background: "#fff",
-        }}
-      >
-        <p
-          style={{
-            marginBottom: "1rem",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            fontSize: "1.125rem",
-          }}
-        >
-          {message.content}
-        </p>
-        <footer style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-          {displayDate && <time>Approved {displayDate}</time>}
-        </footer>
-      </article>
+      <div className="detail-content">
+        <article>
+          <p className="detail-text">{message.content}</p>
+          <div className="detail-meta">
+            {displayDate && <time>{displayDate}</time>}
+          </div>
+        </article>
+      </div>
     </>
   );
 }
