@@ -1,58 +1,48 @@
-# Deployment Manual Steps
+# Deployment (Vercel)
 
-These steps must be completed manually after the code changes are pushed. They configure the hosted services that the CI/CD pipelines depend on.
+This repo is a pnpm monorepo with two Next.js apps:
 
-## 1. Supabase
+- `apps/public` (public site + ingestion endpoint)
+- `apps/admin` (moderation UI)
 
-1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) and create a new project.
-2. Open the **SQL Editor** and run the contents of `packages/db/migrations/0000_initial.sql` to create the schema.
-3. Copy the connection string:
-   - Go to **Settings > Database > Connection string**
-   - Select **Transaction pooler** (port `6543`)
-   - The URL will look like: `postgres://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
+## Recommended setup
 
-## 2. GitHub Secrets
+Create **two** Vercel projects connected to the same GitHub repo:
 
-Go to your repo's **Settings > Secrets and variables > Actions** and add these three secrets:
+### 1) Public app
 
-| Secret                  | Value                                                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`          | Supabase connection string from step 1 (port 6543)                                                                                          |
-| `CLOUDFLARE_API_TOKEN`  | From [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) — needs **Cloudflare Pages: Edit** permission |
-| `CLOUDFLARE_ACCOUNT_ID` | From the Cloudflare dashboard overview page                                                                                                 |
+- Root Directory: `apps/public`
+- Install Command: `pnpm install`
+- Build Command: `pnpm --filter @nulldiary/public build`
+- Output: Next.js default
 
-## 3. Cloudflare Pages Projects
+### 2) Admin app
 
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) and create two Pages projects:
-   - **`nulldiary-public`**
-   - **`nulldiary-admin`**
-2. For each project, go to **Settings > Environment variables** and add:
-   - `DATABASE_URL` = the Supabase connection string from step 1
+- Root Directory: `apps/admin`
+- Install Command: `pnpm install`
+- Build Command: `pnpm --filter @nulldiary/admin build`
 
-## 4. DNS (Cloudflare)
+## Environment variables
 
-Add the following DNS records in your Cloudflare zone for `nulldiary.io`:
+Set these (per project as appropriate):
 
-| Type  | Name    | Target                       |
-| ----- | ------- | ---------------------------- |
-| CNAME | `@`     | `nulldiary-public.pages.dev` |
-| CNAME | `admin` | `nulldiary-admin.pages.dev`  |
+- `DATABASE_URL` (Postgres connection string)
 
-Then add custom domains in each Pages project:
+Admin auth (admin project):
 
-- `nulldiary-public`: add custom domain `nulldiary.io`
-- `nulldiary-admin`: add custom domain `admin.nulldiary.io`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 
-## 5. Push and Verify
+Optional (local/dev only):
 
-1. Push to `main`:
-   ```bash
-   git push origin main
-   ```
-2. Check that the **CI** workflow passes in the Actions tab.
-3. Check that **Deploy Public** and **Deploy Admin** workflows complete successfully.
-4. Verify the public site:
-   ```bash
-   curl -X POST https://nulldiary.io/s/test -H "x-message: hello"
-   ```
-5. Verify the admin UI loads at `https://admin.nulldiary.io`.
+- `SUPABASE_AUTH_BYPASS=true`
+
+## Domains
+
+- Public: `nulldiary.io`
+- Admin: `admin.nulldiary.io`
+
+## Notes
+
+- PR previews should be enabled for both projects.
+- If you want a single PR comment that includes both preview URLs, add a GitHub Action that posts a comment linking both Vercel preview URLs.

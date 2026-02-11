@@ -67,8 +67,8 @@ Local `DATABASE_URL`: `postgres://nulldiary:nulldiary@localhost:5432/nulldiary`
 
 pnpm workspace with two apps and three packages:
 
-- **`apps/public`** -- Next.js 15 SSR site (Cloudflare Workers via `@opennextjs/cloudflare`). Serves approved messages and the ingestion endpoint (`/s/*`).
-- **`apps/admin`** -- Next.js 15 admin moderation UI (Cloudflare Workers via `@opennextjs/cloudflare`). Auth via Supabase; bypass with `SUPABASE_AUTH_BYPASS=true` for local dev.
+- **`apps/public`** -- Next.js 15 SSR site (targeting Vercel). Serves approved messages and the ingestion endpoint (`/s/*`).
+- **`apps/admin`** -- Next.js 15 admin moderation UI (targeting Vercel). Auth via Supabase; bypass with `SUPABASE_AUTH_BYPASS=true` for local dev.
 - **`packages/db`** -- Drizzle ORM schema, postgres.js client factory, and migration runner.
 - **`packages/ingestion`** -- Pure-logic ingestion service: request parsing and normalization. No HTTP framework coupling.
 - **`packages/shared`** -- Placeholder for shared types/Zod schemas (currently empty).
@@ -115,8 +115,7 @@ On success: inserts into `messages` first (UUIDv7 id), then `ingestion_events` w
 
 ### Deployment
 
-- **Cloudflare Workers**: Both apps deploy via `@opennextjs/cloudflare` build + `wrangler deploy`. Config in `wrangler.jsonc` per app. The `nodejs_compat` flag enables native Node.js builtins (net, tls, etc.) so postgres.js works without webpack hacks.
-- **CI/CD**: GitHub Actions in `.github/workflows/` -- `ci.yml` (lint + test on all pushes), `migrate.yml` (run DB migrations on push to main). App deploys are handled by Cloudflare's own build system.
+- **Deployment**: Vercel (target). Configure two Vercel projects for `apps/public` and `apps/admin`.
 
 ## Testing Patterns
 
