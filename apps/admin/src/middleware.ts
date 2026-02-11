@@ -4,10 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = new Set(["/login", "/auth/callback"]);
 
 export async function middleware(request: NextRequest) {
-  if (process.env.SUPABASE_AUTH_BYPASS === "true") {
-    return NextResponse.next();
-  }
-
   const { pathname } = request.nextUrl;
 
   let supabaseResponse = NextResponse.next({ request });

@@ -49,7 +49,7 @@ pnpm --filter @nulldiary/db db:migrate    # Run migrations (tsx src/migrate.ts)
 pnpm --filter @nulldiary/db db:studio     # Open Drizzle Studio
 ```
 
-Requires `DATABASE_URL` environment variable (Postgres connection string).
+Requires `DATABASE_URL` environment variable (Postgres connection string). Used only for migrations/Drizzle Kit.
 
 ### Local Development
 
@@ -61,15 +61,15 @@ pnpm dev:down         # Stop Postgres (preserves data)
 pnpm dev:reset        # Drop and recreate DB + re-migrate
 ```
 
-Local `DATABASE_URL`: `postgres://nulldiary:nulldiary@localhost:5432/nulldiary`
+Required env vars for `dev:services`: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`.
 
 ## Architecture
 
 pnpm workspace with two apps and three packages:
 
 - **`apps/public`** -- Next.js 15 SSR site (targeting Vercel). Serves approved messages and the ingestion endpoint (`/s/*`).
-- **`apps/admin`** -- Next.js 15 admin moderation UI (targeting Vercel). Auth via Supabase; bypass with `SUPABASE_AUTH_BYPASS=true` for local dev.
-- **`packages/db`** -- Drizzle ORM schema, postgres.js client factory, and migration runner.
+- **`apps/admin`** -- Next.js 15 admin moderation UI (targeting Vercel). Auth via Supabase.
+- **`packages/db`** -- Supabase JS client factory, manual TypeScript types for DB tables, Drizzle schema + migration runner (dev tooling only).
 - **`packages/ingestion`** -- Pure-logic ingestion service: request parsing and normalization. No HTTP framework coupling.
 - **`packages/shared`** -- Placeholder for shared types/Zod schemas (currently empty).
 
@@ -84,10 +84,11 @@ packages/db    → (no internal deps)
 
 ### Database
 
-- **Driver**: `postgres` (postgres.js) -- works natively on Cloudflare Workers with `nodejs_compat`. Client configured with `max: 1` and `prepare: false` for Supabase transaction pooler (port 6543).
-- **Schema**: `packages/db/src/schema.ts` -- three tables (`messages`, `ingestion_events`, `moderation_actions`), three enums.
+- **Client**: `@supabase/supabase-js` — all runtime queries go through Supabase PostgREST. Both apps use service role key (backend-only, bypasses RLS).
+- **Schema**: `packages/db/src/schema.ts` -- three tables (`messages`, `ingestion_events`, `moderation_actions`), three enums. Used by Drizzle Kit for migrations only.
+- **Types**: `packages/db/src/types.ts` -- manual TypeScript interfaces matching DB columns (snake_case).
 - **UUIDv7**: Application-side generation via `uuidv7` package. Generated before insert, not DB defaults.
-- **Migrations**: SQL files in `packages/db/migrations/`, run programmatically via `drizzle-orm/postgres-js/migrator` in `packages/db/src/migrate.ts`.
+- **Migrations**: SQL files in `packages/db/migrations/`, run programmatically via `drizzle-orm/postgres-js/migrator` in `packages/db/src/migrate.ts`. Requires `DATABASE_URL`.
 
 ### Ingestion Pipeline
 
@@ -109,9 +110,9 @@ On success: inserts into `messages` first (UUIDv7 id), then `ingestion_events` w
 ### Admin Moderation
 
 - **Data layer** in `apps/admin/src/data/`: `queries.ts` (list/get) and `actions.ts` (approve/deny).
-- **Moderation actions** are transactional: select-for-update, validate pending status, update message, insert audit row, commit.
+- **Moderation actions** are sequential (non-transactional): select message, validate pending status, update message, insert audit row.
 - **API routes** at `apps/admin/src/app/api/`.
-- **DB singleton**: `apps/admin/src/lib/db.ts` exports `getDb()` that lazily creates client from `DATABASE_URL`.
+- **DB singleton**: `apps/admin/src/lib/db.ts` exports `getDb()` that lazily creates Supabase client from `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### Deployment
 
@@ -123,21 +124,18 @@ All packages use **Vitest**. Config in `vitest.config.ts` per package. Tests co-
 
 ### Fake DB Builders (not mocks)
 
-Tests avoid mocking Drizzle internals. Instead, they build lightweight fake DB objects that track method call chains:
+Tests avoid mocking Supabase internals. Instead, they build lightweight fake DB objects that mimic the Supabase client's chainable API:
 
 ```ts
-function makeFakeDb(resultRows: unknown[] = []) {
-  const calls: Array<{ method: string; args?: unknown }> = [];
-  // Returns chainable object with .from(), .where(), .orderBy(), etc.
-  // .then() resolves with resultRows (makes it awaitable)
+function makeFakeDb(resultData: unknown[] = [], countResult: number = 0) {
+  // Returns chainable object with .from().select().eq().order().range()
+  // .then() resolves with { data, error, count } (makes it awaitable)
 }
 ```
 
-For transactional actions, fakes implement `db.transaction(fn)` by passing themselves as the tx context.
-
 ### Factory Functions
 
-Test data built via `makeMessage(overrides)`, `makeEvent(overrides)` patterns -- inline per test file.
+Test data built via `makeMessage(overrides)`, `makeEvent(overrides)` patterns -- inline per test file. Properties use snake_case matching DB columns.
 
 ### Module Mocks (ingestion)
 

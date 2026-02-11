@@ -4,11 +4,14 @@ let db: Db | null = null;
 
 export function getDb(): Db {
   if (!db) {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-      throw new Error("DATABASE_URL environment variable is required");
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) {
+      throw new Error(
+        "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required",
+      );
     }
-    db = createDb(url);
+    db = createDb(url, key);
   }
   return db;
 }

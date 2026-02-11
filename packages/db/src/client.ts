@@ -1,13 +1,7 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "./schema.js";
+import { createClient } from "@supabase/supabase-js";
 
-export function createDb(connectionString: string) {
-  const client = postgres(connectionString, {
-    max: 1,
-    prepare: false, // required for Supabase transaction pooler (port 6543)
-  });
-  return drizzle(client, { schema });
+export function createDb(supabaseUrl: string, supabaseKey: string) {
+  return createClient(supabaseUrl, supabaseKey);
 }
 
 export type Db = ReturnType<typeof createDb>;

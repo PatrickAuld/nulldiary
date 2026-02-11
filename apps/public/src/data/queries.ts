@@ -1,37 +1,44 @@
-import { eq, desc, sql, and, messages, type Db } from "@nulldiary/db";
+import type { Db, Message } from "@nulldiary/db";
 
 export async function getApprovedMessages(
   db: Db,
   opts: { limit?: number; offset?: number },
-): Promise<{ messages: (typeof messages.$inferSelect)[]; total: number }> {
+): Promise<{ messages: Message[]; total: number }> {
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
 
-  const where = eq(messages.moderationStatus, "approved");
+  const { data, error } = await db
+    .from("messages")
+    .select("*")
+    .eq("moderation_status", "approved")
+    .order("approved_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
-  const rows = await db
-    .select()
-    .from(messages)
-    .where(where)
-    .orderBy(desc(messages.approvedAt))
-    .limit(limit)
-    .offset(offset);
+  if (error) throw error;
 
-  const [countRow] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(messages)
-    .where(where);
+  const { count, error: countError } = await db
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .eq("moderation_status", "approved");
 
-  return { messages: rows, total: Number(countRow.count) };
+  if (countError) throw countError;
+
+  return { messages: (data ?? []) as Message[], total: count ?? 0 };
 }
 
 export async function getApprovedMessageById(
   db: Db,
   id: string,
-): Promise<typeof messages.$inferSelect | null> {
-  const [row] = await db
-    .select()
-    .from(messages)
-    .where(and(eq(messages.id, id), eq(messages.moderationStatus, "approved")));
-  return row ?? null;
+): Promise<Message | null> {
+  const { data, error } = await db
+    .from("messages")
+    .select("*")
+    .eq("id", id)
+    .eq("moderation_status", "approved")
+    .single();
+
+  if (error && error.code === "PGRST116") return null;
+  if (error) throw error;
+
+  return data as Message;
 }

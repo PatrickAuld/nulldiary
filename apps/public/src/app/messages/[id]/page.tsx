@@ -18,8 +18,8 @@ export default async function MessagePage({
     notFound();
   }
 
-  const displayDate = message.approvedAt
-    ? message.approvedAt.toLocaleDateString("en-US", {
+  const displayDate = message.approved_at
+    ? new Date(message.approved_at).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",

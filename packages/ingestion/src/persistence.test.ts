@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { messages, ingestionEvents } from "@nulldiary/db";
 import { persistIngestion } from "./persistence.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
@@ -9,15 +8,17 @@ const { mockUuidv7 } = vi.hoisted(() => ({
 vi.mock("uuidv7", () => ({ uuidv7: mockUuidv7 }));
 
 function makeFakeDb() {
-  const insertedRows: Array<{ table: unknown; values: unknown }> = [];
-  const fakeInsert = (table: unknown) => ({
-    values: (values: unknown) => {
-      insertedRows.push({ table, values });
-      return Promise.resolve();
-    },
-  });
+  const insertedRows: Array<{ table: string; values: unknown }> = [];
 
-  return { insert: fakeInsert, insertedRows };
+  return {
+    from: (table: string) => ({
+      insert: (values: unknown) => {
+        insertedRows.push({ table, values });
+        return Promise.resolve({ error: null });
+      },
+    }),
+    insertedRows,
+  };
 }
 
 function makeRaw(overrides: Partial<RawRequest> = {}): RawRequest {
@@ -54,22 +55,22 @@ describe("persistIngestion", () => {
     expect(db.insertedRows).toHaveLength(2);
 
     // Message inserted first (FK constraint)
-    expect(db.insertedRows[0].table).toBe(messages);
+    expect(db.insertedRows[0].table).toBe("messages");
     expect(db.insertedRows[0].values).toMatchObject({
       id: "00000000-0000-0000-0000-000000000001",
       content: "hi",
-      moderationStatus: "pending",
+      moderation_status: "pending",
     });
 
     // Ingestion event inserted second
-    expect(db.insertedRows[1].table).toBe(ingestionEvents);
+    expect(db.insertedRows[1].table).toBe("ingestion_events");
     expect(db.insertedRows[1].values).toMatchObject({
       id: "00000000-0000-0000-0000-000000000002",
       method: "POST",
       path: "/s/",
-      parsedMessage: "hi",
-      parseStatus: "success",
-      messageId: "00000000-0000-0000-0000-000000000001",
+      parsed_message: "hi",
+      parse_status: "success",
+      message_id: "00000000-0000-0000-0000-000000000001",
     });
   });
 
@@ -85,11 +86,11 @@ describe("persistIngestion", () => {
     await persistIngestion(db as never, raw, parsed);
 
     expect(db.insertedRows).toHaveLength(1);
-    expect(db.insertedRows[0].table).toBe(ingestionEvents);
+    expect(db.insertedRows[0].table).toBe("ingestion_events");
     expect(db.insertedRows[0].values).toMatchObject({
-      parsedMessage: null,
-      parseStatus: "failed",
-      messageId: null,
+      parsed_message: null,
+      parse_status: "failed",
+      message_id: null,
     });
   });
 
@@ -116,7 +117,7 @@ describe("persistIngestion", () => {
       path: "/s/hello",
       query: { foo: "bar" },
       headers: { "user-agent": "bot/1.0", "x-message": "hello" },
-      userAgent: "bot/1.0",
+      user_agent: "bot/1.0",
       body: null,
     });
   });

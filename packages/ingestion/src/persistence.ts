@@ -1,4 +1,4 @@
-import { messages, ingestionEvents, type Db } from "@nulldiary/db";
+import type { Db } from "@nulldiary/db";
 import { uuidv7 } from "uuidv7";
 import type { RawRequest, ParseResult } from "./types.js";
 
@@ -11,24 +11,26 @@ export async function persistIngestion(
 
   if (parsed.status === "success") {
     messageId = uuidv7();
-    await db.insert(messages).values({
+    const { error } = await db.from("messages").insert({
       id: messageId,
       content: parsed.message,
       metadata: {},
-      moderationStatus: "pending",
+      moderation_status: "pending",
     });
+    if (error) throw error;
   }
 
-  await db.insert(ingestionEvents).values({
+  const { error } = await db.from("ingestion_events").insert({
     id: uuidv7(),
     method: raw.method,
     path: raw.path,
     query: raw.query,
     headers: raw.headers,
     body: raw.body,
-    userAgent: raw.headers["user-agent"] ?? null,
-    parsedMessage: parsed.message,
-    parseStatus: parsed.status,
-    messageId,
+    user_agent: raw.headers["user-agent"] ?? null,
+    parsed_message: parsed.message,
+    parse_status: parsed.status,
+    message_id: messageId,
   });
+  if (error) throw error;
 }

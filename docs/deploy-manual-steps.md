@@ -26,16 +26,18 @@ Create **two** Vercel projects connected to the same GitHub repo:
 
 Set these (per project as appropriate):
 
-- `DATABASE_URL` (Postgres connection string)
+Both apps:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 Admin auth (admin project):
 
-- `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 
-Optional (local/dev only):
+Migrations only (not needed at runtime):
 
-- `SUPABASE_AUTH_BYPASS=true`
+- `DATABASE_URL` (Postgres connection string)
 
 ## Domains
 

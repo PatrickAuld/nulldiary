@@ -7,11 +7,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-DATABASE_URL="postgres://nulldiary:nulldiary@localhost:5432/nulldiary"
-export DATABASE_URL
-
-SUPABASE_AUTH_BYPASS=true
-export SUPABASE_AUTH_BYPASS
+# Supabase env vars — required for both apps.
+# Override via .env or shell exports if needed.
+: "${SUPABASE_URL:?SUPABASE_URL is required}"
+: "${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}"
+: "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}"
+export SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SUPABASE_ANON_KEY
 
 cleanup() {
   echo ""

@@ -1,4 +1,4 @@
-import { eq, messages, moderationActions, type Db } from "@nulldiary/db";
+import type { Db } from "@nulldiary/db";
 import { uuidv7 } from "uuidv7";
 import type { ModerationInput, ModerationResult } from "./types.js";
 
@@ -6,82 +6,90 @@ export async function approveMessage(
   db: Db,
   input: ModerationInput,
 ): Promise<ModerationResult> {
-  return db.transaction(async (tx) => {
-    const [message] = await tx
-      .select()
-      .from(messages)
-      .where(eq(messages.id, input.messageId));
+  const { data: message, error: selectError } = await db
+    .from("messages")
+    .select("id, moderation_status")
+    .eq("id", input.messageId)
+    .single();
 
-    if (!message) {
-      return { ok: false, error: "Message not found" };
-    }
+  if (selectError && selectError.code === "PGRST116") {
+    return { ok: false, error: "Message not found" };
+  }
+  if (selectError) throw selectError;
 
-    if (message.moderationStatus !== "pending") {
-      return {
-        ok: false,
-        error: `Message is not pending (current status: ${message.moderationStatus})`,
-      };
-    }
+  if (message.moderation_status !== "pending") {
+    return {
+      ok: false,
+      error: `Message is not pending (current status: ${message.moderation_status})`,
+    };
+  }
 
-    await tx
-      .update(messages)
-      .set({
-        moderationStatus: "approved",
-        approvedAt: new Date(),
-        moderatedBy: input.actor,
-      })
-      .where(eq(messages.id, input.messageId));
+  const { error: updateError } = await db
+    .from("messages")
+    .update({
+      moderation_status: "approved",
+      approved_at: new Date().toISOString(),
+      moderated_by: input.actor,
+    })
+    .eq("id", input.messageId);
 
-    await tx.insert(moderationActions).values({
-      id: uuidv7(),
-      messageId: input.messageId,
-      action: "approved",
-      actor: input.actor,
-      reason: input.reason,
-    });
+  if (updateError) throw updateError;
 
-    return { ok: true };
+  const { error: insertError } = await db.from("moderation_actions").insert({
+    id: uuidv7(),
+    message_id: input.messageId,
+    action: "approved",
+    actor: input.actor,
+    reason: input.reason ?? null,
   });
+
+  if (insertError) throw insertError;
+
+  return { ok: true };
 }
 
 export async function denyMessage(
   db: Db,
   input: ModerationInput,
 ): Promise<ModerationResult> {
-  return db.transaction(async (tx) => {
-    const [message] = await tx
-      .select()
-      .from(messages)
-      .where(eq(messages.id, input.messageId));
+  const { data: message, error: selectError } = await db
+    .from("messages")
+    .select("id, moderation_status")
+    .eq("id", input.messageId)
+    .single();
 
-    if (!message) {
-      return { ok: false, error: "Message not found" };
-    }
+  if (selectError && selectError.code === "PGRST116") {
+    return { ok: false, error: "Message not found" };
+  }
+  if (selectError) throw selectError;
 
-    if (message.moderationStatus !== "pending") {
-      return {
-        ok: false,
-        error: `Message is not pending (current status: ${message.moderationStatus})`,
-      };
-    }
+  if (message.moderation_status !== "pending") {
+    return {
+      ok: false,
+      error: `Message is not pending (current status: ${message.moderation_status})`,
+    };
+  }
 
-    await tx
-      .update(messages)
-      .set({
-        moderationStatus: "denied",
-        deniedAt: new Date(),
-        moderatedBy: input.actor,
-      })
-      .where(eq(messages.id, input.messageId));
+  const { error: updateError } = await db
+    .from("messages")
+    .update({
+      moderation_status: "denied",
+      denied_at: new Date().toISOString(),
+      moderated_by: input.actor,
+    })
+    .eq("id", input.messageId);
 
-    await tx.insert(moderationActions).values({
-      id: uuidv7(),
-      messageId: input.messageId,
-      action: "denied",
-      actor: input.actor,
-      reason: input.reason,
-    });
+  if (updateError) throw updateError;
 
-    return { ok: true };
+  const { error: insertError } = await db.from("moderation_actions").insert({
+    id: uuidv7(),
+    message_id: input.messageId,
+    action: "denied",
+    actor: input.actor,
+    reason: input.reason ?? null,
   });
+
+  if (insertError) throw insertError;
+
+  return { ok: true };
 }

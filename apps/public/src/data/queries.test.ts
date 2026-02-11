@@ -6,32 +6,42 @@ function makeApprovedMessage(overrides: Record<string, unknown> = {}) {
     id: "msg-1",
     content: "Hello world",
     metadata: {},
-    createdAt: new Date("2024-01-15"),
-    approvedAt: new Date("2024-01-16"),
-    deniedAt: null,
-    moderationStatus: "approved",
-    moderatedBy: "admin",
+    created_at: "2024-01-15T00:00:00.000Z",
+    approved_at: "2024-01-16T00:00:00.000Z",
+    denied_at: null,
+    moderation_status: "approved",
+    moderated_by: "admin",
     tags: null,
     ...overrides,
   };
 }
 
 /**
- * Builds a fake db that tracks chained calls so we can assert
- * which tables, conditions, orderings, limits, and offsets are used.
- *
- * Same pattern as the admin app tests — two query chains per call:
- * one for rows, one for count.
+ * Builds a fake Supabase client for list queries.
+ * Two awaits per call: first for data rows, second for count.
  */
-function makeFakeDb(resultRows: unknown[] = [], countResult: number = 0) {
-  const calls: Array<{ method: string; args?: unknown }> = [];
-  let callIndex = 0;
+function makeFakeDb(resultData: unknown[] = [], countResult: number = 0) {
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  let queryIndex = 0;
 
-  const results = [resultRows, [{ count: countResult }]];
+  const queryResults = [
+    { data: resultData, error: null, count: null },
+    { data: null, error: null, count: countResult },
+  ];
 
-  function makeChain(): Record<string, (...args: unknown[]) => unknown> {
-    const chain: Record<string, (...args: unknown[]) => unknown> = {};
-    const chainMethods = ["from", "where", "orderBy", "limit", "offset"];
+  function makeChain() {
+    const chainMethods = [
+      "select",
+      "eq",
+      "ilike",
+      "gt",
+      "lt",
+      "order",
+      "range",
+      "single",
+    ];
+
+    const chain: Record<string, unknown> = {};
 
     for (const method of chainMethods) {
       chain[method] = (...args: unknown[]) => {
@@ -41,57 +51,66 @@ function makeFakeDb(resultRows: unknown[] = [], countResult: number = 0) {
     }
 
     chain.then = (resolve: (v: unknown) => void) => {
-      resolve(results[callIndex++]);
+      const result = queryResults[queryIndex++] ?? {
+        data: null,
+        error: null,
+        count: null,
+      };
+      resolve(result);
     };
 
     return chain;
   }
 
-  const fakeDb = {
-    select: (...args: unknown[]) => {
-      calls.push({ method: "select", args });
+  return {
+    from: (table: string) => {
+      calls.push({ method: "from", args: [table] });
       return makeChain();
     },
     calls,
   };
-
-  return fakeDb;
 }
 
 /**
- * Single-result fake db for getApprovedMessageById — only one query chain,
- * no count query.
+ * Fake for queries that call .single() — resolves with a single object.
  */
-function makeSingleResultDb(resultRows: unknown[] = []) {
-  const calls: Array<{ method: string; args?: unknown }> = [];
+function makeSingleDb(
+  resultData: unknown | null,
+  resultError: {
+    code: string;
+    message: string;
+    details: string;
+    hint: string;
+  } | null = null,
+) {
+  function makeChain() {
+    const chainMethods = [
+      "select",
+      "eq",
+      "ilike",
+      "gt",
+      "lt",
+      "order",
+      "range",
+      "single",
+    ];
 
-  function makeChain(): Record<string, (...args: unknown[]) => unknown> {
-    const chain: Record<string, (...args: unknown[]) => unknown> = {};
-    const chainMethods = ["from", "where", "orderBy", "limit", "offset"];
+    const chain: Record<string, unknown> = {};
 
     for (const method of chainMethods) {
-      chain[method] = (...args: unknown[]) => {
-        calls.push({ method, args });
-        return chain;
-      };
+      chain[method] = () => chain;
     }
 
     chain.then = (resolve: (v: unknown) => void) => {
-      resolve(resultRows);
+      resolve({ data: resultData, error: resultError });
     };
 
     return chain;
   }
 
-  const fakeDb = {
-    select: (...args: unknown[]) => {
-      calls.push({ method: "select", args });
-      return makeChain();
-    },
-    calls,
+  return {
+    from: () => makeChain(),
   };
-
-  return fakeDb;
 }
 
 describe("getApprovedMessages", () => {
@@ -105,16 +124,13 @@ describe("getApprovedMessages", () => {
     expect(result.total).toBe(2);
   });
 
-  it("defaults to limit 50 and offset 0", async () => {
+  it("defaults to limit 50 offset 0 via range(0, 49)", async () => {
     const db = makeFakeDb([], 0);
 
     await getApprovedMessages(db as never, {});
 
-    const limitCall = db.calls.find((c) => c.method === "limit");
-    expect(limitCall?.args?.[0]).toBe(50);
-
-    const offsetCall = db.calls.find((c) => c.method === "offset");
-    expect(offsetCall?.args?.[0]).toBe(0);
+    const rangeCall = db.calls.find((c) => c.method === "range");
+    expect(rangeCall?.args).toEqual([0, 49]);
   });
 
   it("respects custom limit and offset", async () => {
@@ -122,11 +138,8 @@ describe("getApprovedMessages", () => {
 
     await getApprovedMessages(db as never, { limit: 10, offset: 20 });
 
-    const limitCall = db.calls.find((c) => c.method === "limit");
-    expect(limitCall?.args?.[0]).toBe(10);
-
-    const offsetCall = db.calls.find((c) => c.method === "offset");
-    expect(offsetCall?.args?.[0]).toBe(20);
+    const rangeCall = db.calls.find((c) => c.method === "range");
+    expect(rangeCall?.args).toEqual([20, 29]);
   });
 
   it("returns empty results gracefully", async () => {
@@ -142,7 +155,7 @@ describe("getApprovedMessages", () => {
 describe("getApprovedMessageById", () => {
   it("returns the message when found and approved", async () => {
     const msg = makeApprovedMessage();
-    const db = makeSingleResultDb([msg]);
+    const db = makeSingleDb(msg);
 
     const result = await getApprovedMessageById(db as never, "msg-1");
 
@@ -150,7 +163,12 @@ describe("getApprovedMessageById", () => {
   });
 
   it("returns null when not found", async () => {
-    const db = makeSingleResultDb([]);
+    const db = makeSingleDb(null, {
+      code: "PGRST116",
+      message: "not found",
+      details: "",
+      hint: "",
+    });
 
     const result = await getApprovedMessageById(db as never, "nonexistent");
 

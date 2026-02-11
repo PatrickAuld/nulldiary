@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { messages, moderationActions } from "@nulldiary/db";
 import { approveMessage, denyMessage } from "./actions.js";
 
 const { mockUuidv7 } = vi.hoisted(() => ({
@@ -7,57 +6,64 @@ const { mockUuidv7 } = vi.hoisted(() => ({
 }));
 vi.mock("uuidv7", () => ({ uuidv7: mockUuidv7 }));
 
+/**
+ * Builds a fake Supabase client for moderation actions.
+ * Supports .from().select().eq().single() for reads
+ * and .from().update().eq() / .from().insert() for writes.
+ */
 function makeFakeDb() {
-  const ops: Array<{
-    op: string;
-    table?: unknown;
-    values?: unknown;
-    where?: unknown;
-  }> = [];
-  let selectResult: unknown[] = [];
-
-  const whereChain = {
-    where: (_cond: unknown) => {
-      ops.push({ op: "where", where: _cond });
-      return Promise.resolve(selectResult);
-    },
-  };
-
-  const fromChain = {
-    from: (table: unknown) => {
-      ops.push({ op: "from", table });
-      return whereChain;
-    },
-  };
-
-  const setChain = {
-    set: (values: unknown) => {
-      ops.push({ op: "set", values });
-      return whereChain;
-    },
+  const ops: Array<{ op: string; table?: string; args?: unknown }> = [];
+  let selectResult: { data: unknown; error: unknown } = {
+    data: null,
+    error: null,
   };
 
   const fakeDb = {
-    select: () => {
-      ops.push({ op: "select" });
-      return fromChain;
-    },
-    update: (table: unknown) => {
-      ops.push({ op: "update", table });
-      return setChain;
-    },
-    insert: (table: unknown) => ({
-      values: (values: unknown) => {
-        ops.push({ op: "insert", table, values });
-        return Promise.resolve();
-      },
-    }),
-    transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
-      return fn(fakeDb);
+    from: (table: string) => {
+      ops.push({ op: "from", table });
+
+      return {
+        select: (...args: unknown[]) => {
+          ops.push({ op: "select", args });
+          const chain: Record<string, unknown> = {};
+          chain.eq = (...eqArgs: unknown[]) => {
+            ops.push({ op: "eq", args: eqArgs });
+            return chain;
+          };
+          chain.single = () => {
+            ops.push({ op: "single" });
+            return chain;
+          };
+          chain.then = (resolve: (v: unknown) => void) => {
+            resolve(selectResult);
+          };
+          return chain;
+        },
+        update: (values: unknown) => {
+          ops.push({ op: "update", args: [values] });
+          const chain: Record<string, unknown> = {};
+          chain.eq = (...args: unknown[]) => {
+            ops.push({ op: "eq", args });
+            return chain;
+          };
+          chain.then = (resolve: (v: unknown) => void) => {
+            resolve({ error: null });
+          };
+          return chain;
+        },
+        insert: (values: unknown) => {
+          ops.push({ op: "insert", table, args: [values] });
+          const chain: Record<string, unknown> = {};
+          chain.then = (resolve: (v: unknown) => void) => {
+            resolve({ error: null });
+          };
+          return chain;
+        },
+      };
     },
     ops,
-    setSelectResult: (rows: unknown[]) => {
-      selectResult = rows;
+    setSelectResult: (data: unknown, error: unknown = null) => {
+      selectResult = { data, error };
     },
   };
 
@@ -73,11 +79,7 @@ beforeEach(() => {
 describe("approveMessage", () => {
   it("approves a pending message and inserts audit row", async () => {
     const db = makeFakeDb();
-    const pendingMessage = {
-      id: "msg-1",
-      moderationStatus: "pending",
-    };
-    db.setSelectResult([pendingMessage]);
+    db.setSelectResult({ id: "msg-1", moderation_status: "pending" });
 
     const result = await approveMessage(db as never, {
       messageId: "msg-1",
@@ -87,30 +89,25 @@ describe("approveMessage", () => {
 
     expect(result).toEqual({ ok: true });
 
-    // Should have: select, from, where, update, set, where, insert
-    const updateOp = db.ops.find(
-      (op) => op.op === "update" && op.table === messages,
-    );
+    const updateOp = db.ops.find((op) => op.op === "update");
     expect(updateOp).toBeTruthy();
+    const updateValues = (updateOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(updateValues.moderation_status).toBe("approved");
+    expect(updateValues.moderated_by).toBe("admin@test.com");
+    expect(updateValues.approved_at).toBeDefined();
 
-    const setOp = db.ops.find((op) => op.op === "set");
-    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe(
-      "approved",
-    );
-    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe(
-      "admin@test.com",
-    );
-    expect(
-      (setOp?.values as Record<string, unknown>).approvedAt,
-    ).toBeInstanceOf(Date);
-
-    const insertOp = db.ops.find(
-      (op) => op.op === "insert" && op.table === moderationActions,
-    );
+    const insertOp = db.ops.find((op) => op.op === "insert");
     expect(insertOp).toBeTruthy();
-    expect(insertOp?.values as Record<string, unknown>).toMatchObject({
+    const insertValues = (insertOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(insertValues).toMatchObject({
       id: FIXED_UUID,
-      messageId: "msg-1",
+      message_id: "msg-1",
       action: "approved",
       actor: "admin@test.com",
       reason: "Looks good",
@@ -119,7 +116,12 @@ describe("approveMessage", () => {
 
   it("returns error when message not found", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([]);
+    db.setSelectResult(null, {
+      code: "PGRST116",
+      message: "not found",
+      details: "",
+      hint: "",
+    });
 
     const result = await approveMessage(db as never, {
       messageId: "nonexistent",
@@ -131,7 +133,7 @@ describe("approveMessage", () => {
 
   it("returns error when message is not pending", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([{ id: "msg-1", moderationStatus: "approved" }]);
+    db.setSelectResult({ id: "msg-1", moderation_status: "approved" });
 
     const result = await approveMessage(db as never, {
       messageId: "msg-1",
@@ -146,7 +148,7 @@ describe("approveMessage", () => {
 
   it("works without a reason", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([{ id: "msg-1", moderationStatus: "pending" }]);
+    db.setSelectResult({ id: "msg-1", moderation_status: "pending" });
 
     const result = await approveMessage(db as never, {
       messageId: "msg-1",
@@ -155,19 +157,19 @@ describe("approveMessage", () => {
 
     expect(result).toEqual({ ok: true });
 
-    const insertOp = db.ops.find(
-      (op) => op.op === "insert" && op.table === moderationActions,
-    );
-    expect(
-      (insertOp?.values as Record<string, unknown>).reason,
-    ).toBeUndefined();
+    const insertOp = db.ops.find((op) => op.op === "insert");
+    const insertValues = (insertOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(insertValues.reason).toBeNull();
   });
 });
 
 describe("denyMessage", () => {
   it("denies a pending message and inserts audit row", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([{ id: "msg-2", moderationStatus: "pending" }]);
+    db.setSelectResult({ id: "msg-2", moderation_status: "pending" });
 
     const result = await denyMessage(db as never, {
       messageId: "msg-2",
@@ -177,25 +179,22 @@ describe("denyMessage", () => {
 
     expect(result).toEqual({ ok: true });
 
-    const setOp = db.ops.find((op) => op.op === "set");
-    expect((setOp?.values as Record<string, unknown>).moderationStatus).toBe(
-      "denied",
-    );
-    expect((setOp?.values as Record<string, unknown>).moderatedBy).toBe(
-      "mod@test.com",
-    );
-    expect((setOp?.values as Record<string, unknown>).deniedAt).toBeInstanceOf(
-      Date,
-    );
-    // deniedAt, not approvedAt
-    expect(
-      (setOp?.values as Record<string, unknown>).approvedAt,
-    ).toBeUndefined();
+    const updateOp = db.ops.find((op) => op.op === "update");
+    const updateValues = (updateOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(updateValues.moderation_status).toBe("denied");
+    expect(updateValues.moderated_by).toBe("mod@test.com");
+    expect(updateValues.denied_at).toBeDefined();
+    expect(updateValues.approved_at).toBeUndefined();
 
-    const insertOp = db.ops.find(
-      (op) => op.op === "insert" && op.table === moderationActions,
-    );
-    expect(insertOp?.values as Record<string, unknown>).toMatchObject({
+    const insertOp = db.ops.find((op) => op.op === "insert");
+    const insertValues = (insertOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(insertValues).toMatchObject({
       action: "denied",
       actor: "mod@test.com",
       reason: "Spam",
@@ -204,7 +203,12 @@ describe("denyMessage", () => {
 
   it("returns error when message not found", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([]);
+    db.setSelectResult(null, {
+      code: "PGRST116",
+      message: "not found",
+      details: "",
+      hint: "",
+    });
 
     const result = await denyMessage(db as never, {
       messageId: "nonexistent",
@@ -216,7 +220,7 @@ describe("denyMessage", () => {
 
   it("returns error when message is already denied", async () => {
     const db = makeFakeDb();
-    db.setSelectResult([{ id: "msg-2", moderationStatus: "denied" }]);
+    db.setSelectResult({ id: "msg-2", moderation_status: "denied" });
 
     const result = await denyMessage(db as never, {
       messageId: "msg-2",

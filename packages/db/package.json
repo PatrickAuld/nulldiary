@@ -14,11 +14,12 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.0",
-    "postgres": "^3.4.3"
+    "@supabase/supabase-js": "^2.95.3"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.0",
+    "drizzle-orm": "^0.45.0",
+    "postgres": "^3.4.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.0"
   }

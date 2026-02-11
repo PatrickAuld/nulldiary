@@ -9,8 +9,9 @@ function secretSize(content: string): "large" | "medium" | "small" {
   return "small";
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
+function formatDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -56,7 +57,7 @@ export default async function HomePage({
             <span className="secret-number">
               No. {String(total - offset - i).padStart(3, "0")}
             </span>
-            {msg.approvedAt && <time>{formatDate(msg.approvedAt)}</time>}
+            {msg.approved_at && <time>{formatDate(msg.approved_at)}</time>}
           </div>
         </a>
       ))}
