@@ -1,6 +1,4 @@
-import type { messages } from "@nulldiary/db";
-
-type Message = typeof messages.$inferSelect;
+import type { Message } from "@nulldiary/db";
 
 export function MessageList({ messages }: { messages: Message[] }) {
   if (messages.length === 0) {
@@ -26,11 +24,14 @@ export function MessageList({ messages }: { messages: Message[] }) {
                 : msg.content}
             </td>
             <td>
-              <span className="status-badge" data-status={msg.moderationStatus}>
-                {msg.moderationStatus}
+              <span
+                className="status-badge"
+                data-status={msg.moderation_status}
+              >
+                {msg.moderation_status}
               </span>
             </td>
-            <td>{new Date(msg.createdAt).toLocaleString()}</td>
+            <td>{new Date(msg.created_at).toLocaleString()}</td>
             <td>
               <a href={`/messages/${msg.id}`}>View</a>
             </td>
