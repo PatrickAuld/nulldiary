@@ -1,7 +1,4 @@
-import type { messages, ingestionEvents } from "@nulldiary/db";
-
-type Message = typeof messages.$inferSelect;
-type IngestionEvent = typeof ingestionEvents.$inferSelect;
+import type { Message, IngestionEvent } from "@nulldiary/db";
 
 export function MessageDetail({
   message,
@@ -16,17 +13,20 @@ export function MessageDetail({
         <h2>Message</h2>
         <p>
           <strong>Status:</strong>{" "}
-          <span className="status-badge" data-status={message.moderationStatus}>
-            {message.moderationStatus}
+          <span
+            className="status-badge"
+            data-status={message.moderation_status}
+          >
+            {message.moderation_status}
           </span>
         </p>
         <p>
           <strong>Created:</strong>{" "}
-          {new Date(message.createdAt).toLocaleString()}
+          {new Date(message.created_at).toLocaleString()}
         </p>
-        {message.moderatedBy && (
+        {message.moderated_by && (
           <p>
-            <strong>Moderated by:</strong> {message.moderatedBy}
+            <strong>Moderated by:</strong> {message.moderated_by}
           </p>
         )}
         <pre>{message.content}</pre>
@@ -41,7 +41,7 @@ export function MessageDetail({
             <details key={evt.id} style={{ marginBottom: "0.5rem" }}>
               <summary>
                 {evt.method} {evt.path} —{" "}
-                {new Date(evt.receivedAt).toLocaleString()}
+                {new Date(evt.received_at).toLocaleString()}
               </summary>
               <pre>
                 {JSON.stringify(
