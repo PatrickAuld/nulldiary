@@ -15,6 +15,23 @@ function makeRaw(overrides: Partial<RawRequest> = {}): RawRequest {
 }
 
 describe("parseMessage", () => {
+  it("truncates long messages to the configured max length (default 512)", () => {
+    const long = "a".repeat(600);
+    const result = parseMessage({
+      method: "POST",
+      path: "/s/",
+      query: {},
+      headers: {},
+      body: JSON.stringify({ message: long }),
+      contentType: "application/json",
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") throw new Error("expected success");
+
+    expect(result.message).toHaveLength(512);
+  });
+
   describe("headers (highest priority)", () => {
     it("extracts x-message header", () => {
       const result = parseMessage(makeRaw({ headers: { "x-message": "hi" } }));

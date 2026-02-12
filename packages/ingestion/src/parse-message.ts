@@ -1,11 +1,14 @@
 import type { RawRequest, ParseResult, ParseSource } from "./types.js";
+import { MESSAGE_MAX_LENGTH } from "./config.js";
 
 const HEADER_KEYS = ["x-message", "x-secret", "x-prompt"] as const;
 const BODY_FIELD_KEYS = ["message", "secret", "prompt"] as const;
 const QUERY_KEYS = ["message", "secret"] as const;
 
 function success(message: string, source: ParseSource): ParseResult {
-  return { message, status: "success", source };
+  const max = Number.isFinite(MESSAGE_MAX_LENGTH) ? MESSAGE_MAX_LENGTH : 512;
+  const truncated = max > 0 ? message.slice(0, max) : "";
+  return { message: truncated, status: "success", source };
 }
 
 const FAILED: ParseResult = { message: null, status: "failed", source: null };
