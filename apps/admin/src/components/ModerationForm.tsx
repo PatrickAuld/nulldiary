@@ -20,24 +20,38 @@ export function ModerationForm({
     setStatus("loading");
     setErrorMessage("");
 
-    const res = await fetch(`/api/moderation/${action}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messageId,
-        reason: reason.trim() || undefined,
-        ...(action === "approve"
-          ? { editedContent: editedContent.trim() || undefined }
-          : {}),
-      }),
-    });
+    try {
+      const res = await fetch(`/api/moderation/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId,
+          reason: reason.trim() || undefined,
+          ...(action === "approve"
+            ? { editedContent: editedContent.trim() || undefined }
+            : {}),
+        }),
+      });
 
-    if (res.ok) {
-      setStatus("success");
-      window.location.reload();
-    } else {
-      const body = await res.json();
-      setErrorMessage(body.error ?? "An error occurred");
+      if (res.ok) {
+        setStatus("success");
+        window.location.reload();
+        return;
+      }
+
+      let body: any = null;
+      try {
+        body = await res.json();
+      } catch {
+        // If the server returns HTML/plaintext, avoid leaving the UI stuck.
+      }
+
+      setErrorMessage(body?.error ?? `Request failed (${res.status})`);
+      setStatus("error");
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Network error while moderating",
+      );
       setStatus("error");
     }
   }
