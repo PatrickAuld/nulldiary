@@ -30,15 +30,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="page-content">
-        <h1 className="page-heading">
-          {featured.set.title ?? "Today\'s featured"}
-        </h1>
-        <p className="page-description">
-          A curated selection that rolls over automatically.
-        </p>
-      </div>
-
       {featured.messages.map((msg) => (
         <a
           key={msg.id}
