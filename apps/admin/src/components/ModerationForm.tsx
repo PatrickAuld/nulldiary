@@ -5,9 +5,13 @@ import { useState } from "react";
 export function ModerationForm({
   messageId,
   defaultEditedContent,
+  canApprove,
+  canDeny,
 }: {
   messageId: string;
   defaultEditedContent: string;
+  canApprove?: boolean;
+  canDeny?: boolean;
 }) {
   const [reason, setReason] = useState("");
   const [editedContent, setEditedContent] = useState(defaultEditedContent);
@@ -80,20 +84,24 @@ export function ModerationForm({
         />
       </div>
       <div className="actions">
-        <button
-          data-action="approve"
-          disabled={status === "loading"}
-          onClick={() => handleAction("approve")}
-        >
-          Approve
-        </button>
-        <button
-          data-action="deny"
-          disabled={status === "loading"}
-          onClick={() => handleAction("deny")}
-        >
-          Deny
-        </button>
+        {(canApprove ?? true) && (
+          <button
+            data-action="approve"
+            disabled={status === "loading"}
+            onClick={() => handleAction("approve")}
+          >
+            Approve
+          </button>
+        )}
+        {(canDeny ?? true) && (
+          <button
+            data-action="deny"
+            disabled={status === "loading"}
+            onClick={() => handleAction("deny")}
+          >
+            Deny
+          </button>
+        )}
       </div>
       {status === "error" && <p className="error">{errorMessage}</p>}
       {status === "success" && <p className="success">Action completed.</p>}

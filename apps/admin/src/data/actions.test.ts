@@ -187,7 +187,7 @@ describe("denyMessage", () => {
     expect(updateValues.moderation_status).toBe("denied");
     expect(updateValues.moderated_by).toBe("mod@test.com");
     expect(updateValues.denied_at).toBeDefined();
-    expect(updateValues.approved_at).toBeUndefined();
+    expect(updateValues.approved_at).toBeNull();
 
     const insertOp = db.ops.find((op) => op.op === "insert");
     const insertValues = (insertOp?.args as unknown[])?.[0] as Record<
@@ -199,6 +199,27 @@ describe("denyMessage", () => {
       actor: "mod@test.com",
       reason: "Spam",
     });
+  });
+
+  it("allows denying an approved message (retroactive denial)", async () => {
+    const db = makeFakeDb();
+    db.setSelectResult({ id: "msg-3", moderation_status: "approved" });
+
+    const result = await denyMessage(db as never, {
+      messageId: "msg-3",
+      actor: "mod@test.com",
+      reason: "Bad content",
+    });
+
+    expect(result).toEqual({ ok: true });
+
+    const updateOp = db.ops.find((op) => op.op === "update");
+    const updateValues = (updateOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(updateValues.moderation_status).toBe("denied");
+    expect(updateValues.approved_at).toBeNull();
   });
 
   it("returns error when message not found", async () => {
@@ -229,7 +250,7 @@ describe("denyMessage", () => {
 
     expect(result).toEqual({
       ok: false,
-      error: "Message is not pending (current status: denied)",
+      error: "Message is already denied",
     });
   });
 });

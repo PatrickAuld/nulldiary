@@ -65,18 +65,21 @@ export async function denyMessage(
   }
   if (selectError) throw selectError;
 
-  if (message.moderation_status !== "pending") {
+  if (message.moderation_status === "denied") {
     return {
       ok: false,
-      error: `Message is not pending (current status: ${message.moderation_status})`,
+      error: "Message is already denied",
     };
   }
 
+  // Allow retroactive denial of previously-approved messages.
   const { error: updateError } = await db
     .from("messages")
     .update({
       moderation_status: "denied",
       denied_at: new Date().toISOString(),
+      // If we are revoking approval, clear approved_at so timelines stay consistent.
+      approved_at: null,
       moderated_by: input.actor,
     })
     .eq("id", input.messageId);
