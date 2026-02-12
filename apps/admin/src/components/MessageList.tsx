@@ -90,90 +90,92 @@ export function MessageList({ messages }: { messages: Message[] }) {
   }
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Content</th>
-          <th>Edited</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {messages.map((msg) => {
-          const row = rows[msg.id] ?? {
-            editedContent: msg.content,
-            status: "idle" as const,
-          };
-          const isLoading = row.status === "loading";
+    <div className="table-wrap">
+      <table className="messages-table">
+        <thead>
+          <tr>
+            <th>Content</th>
+            <th>Edited</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {messages.map((msg) => {
+            const row = rows[msg.id] ?? {
+              editedContent: msg.content,
+              status: "idle" as const,
+            };
+            const isLoading = row.status === "loading";
 
-          return (
-            <tr key={msg.id}>
-              <td>
-                {msg.content.length > 100
-                  ? msg.content.slice(0, 100) + "..."
-                  : msg.content}
-              </td>
-              <td style={{ minWidth: 320 }}>
-                <textarea
-                  value={row.editedContent}
-                  onChange={(e) =>
-                    setRows((prev) => ({
-                      ...prev,
-                      [msg.id]: {
-                        ...prev[msg.id],
-                        editedContent: e.target.value,
-                      },
-                    }))
-                  }
-                  rows={3}
-                  style={{ width: "100%" }}
-                  placeholder="Edited content used for approval"
-                />
-              </td>
-              <td>
-                <span
-                  className="status-badge"
-                  data-status={msg.moderation_status}
-                >
-                  {msg.moderation_status}
-                </span>
-              </td>
-              <td>{new Date(msg.created_at).toLocaleString()}</td>
-              <td>
-                <details>
-                  <summary style={{ cursor: "pointer" }}>Actions</summary>
-                  <div
-                    style={{ display: "flex", gap: "0.5rem", paddingTop: 8 }}
+            return (
+              <tr key={msg.id}>
+                <td>
+                  {msg.content.length > 100
+                    ? msg.content.slice(0, 100) + "..."
+                    : msg.content}
+                </td>
+                <td style={{ minWidth: 320 }}>
+                  <textarea
+                    value={row.editedContent}
+                    onChange={(e) =>
+                      setRows((prev) => ({
+                        ...prev,
+                        [msg.id]: {
+                          ...prev[msg.id],
+                          editedContent: e.target.value,
+                        },
+                      }))
+                    }
+                    rows={3}
+                    style={{ width: "100%" }}
+                    placeholder="Edited content used for approval"
+                  />
+                </td>
+                <td>
+                  <span
+                    className="status-badge"
+                    data-status={msg.moderation_status}
                   >
-                    <a href={`/messages/${msg.id}`}>View</a>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => moderate("approve", msg.id)}
+                    {msg.moderation_status}
+                  </span>
+                </td>
+                <td>{new Date(msg.created_at).toLocaleString()}</td>
+                <td>
+                  <details>
+                    <summary style={{ cursor: "pointer" }}>Actions</summary>
+                    <div
+                      style={{ display: "flex", gap: "0.5rem", paddingTop: 8 }}
                     >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => moderate("deny", msg.id)}
-                    >
-                      Deny
-                    </button>
-                  </div>
-                  {row.status === "error" && (
-                    <p className="error" style={{ marginTop: 8 }}>
-                      {row.error}
-                    </p>
-                  )}
-                </details>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                      <a href={`/messages/${msg.id}`}>View</a>
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => moderate("approve", msg.id)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => moderate("deny", msg.id)}
+                      >
+                        Deny
+                      </button>
+                    </div>
+                    {row.status === "error" && (
+                      <p className="error" style={{ marginTop: 8 }}>
+                        {row.error}
+                      </p>
+                    )}
+                  </details>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }

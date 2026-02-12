@@ -16,6 +16,26 @@ body {
   padding: 1rem;
 }
 
+/* Mobile-friendly defaults */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+
+.messages-table {
+  min-width: 920px; /* keep columns usable; scroll on small screens */
+}
+
 nav {
   padding: 1rem 0;
   border-bottom: 1px solid #e5e5e5;
@@ -38,11 +58,17 @@ table {
   margin-top: 1rem;
 }
 
+/* When a table is wrapped, remove the outer margin to avoid double spacing. */
+.table-wrap table {
+  margin-top: 0;
+}
+
 th,
 td {
   text-align: left;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid #e5e5e5;
+  vertical-align: top;
 }
 
 th {
@@ -76,6 +102,7 @@ textarea {
 textarea {
   width: 100%;
   min-height: 4rem;
+  resize: vertical;
 }
 
 button {
@@ -108,6 +135,42 @@ button:disabled {
   align-items: end;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 0.75rem;
+  }
+
+  nav {
+    padding: 0.75rem 0;
+    margin-bottom: 1rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters > div {
+    width: 100%;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  /* Make details dropdown easier to tap */
+  details > summary {
+    padding: 0.25rem 0;
+  }
 }
 
 .filters > div {
