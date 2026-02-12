@@ -1,5 +1,6 @@
 import {
   inet,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -69,6 +70,34 @@ export const moderationActions = pgTable("moderation_actions", {
   action: moderationActionEnum("action").notNull(),
   actor: text("actor").notNull(),
   reason: text("reason"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const featuredSets = pgTable("featured_sets", {
+  id: uuid("id").primaryKey(),
+  slug: text("slug").notNull(),
+  title: text("title"),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const featuredSetMessages = pgTable("featured_set_messages", {
+  id: uuid("id").primaryKey(),
+  setId: uuid("set_id")
+    .notNull()
+    .references(() => featuredSets.id),
+  messageId: uuid("message_id")
+    .notNull()
+    .references(() => messages.id),
+  position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
