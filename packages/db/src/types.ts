@@ -40,8 +40,7 @@ export interface FeaturedSet {
   id: string;
   slug: string;
   title: string | null;
-  starts_at: string;
-  ends_at: string;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
 }

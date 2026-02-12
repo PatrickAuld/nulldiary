@@ -1,4 +1,5 @@
 import {
+  boolean,
   inet,
   integer,
   jsonb,
@@ -79,8 +80,7 @@ export const featuredSets = pgTable("featured_sets", {
   id: uuid("id").primaryKey(),
   slug: text("slug").notNull(),
   title: text("title"),
-  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
-  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  pinned: boolean("pinned").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
