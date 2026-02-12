@@ -28,6 +28,8 @@ export const moderationActionEnum = pgEnum("moderation_action", [
 export const messages = pgTable("messages", {
   id: uuid("id").primaryKey(),
   content: text("content").notNull(),
+  // Optional admin-edited version of content used for public display.
+  editedContent: text("edited_content"),
   metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

@@ -8,7 +8,7 @@ export async function approveMessage(
 ): Promise<ModerationResult> {
   const { data: message, error: selectError } = await db
     .from("messages")
-    .select("id, moderation_status")
+    .select("id, content, moderation_status")
     .eq("id", input.messageId)
     .single();
 
@@ -30,6 +30,8 @@ export async function approveMessage(
       moderation_status: "approved",
       approved_at: new Date().toISOString(),
       moderated_by: input.actor,
+      edited_content:
+        input.editedContent?.trim() || (message.content ?? "").trim() || null,
     })
     .eq("id", input.messageId);
 

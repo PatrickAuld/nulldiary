@@ -1,6 +1,7 @@
 export interface Message {
   id: string;
   content: string;
+  edited_content: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   approved_at: string | null;

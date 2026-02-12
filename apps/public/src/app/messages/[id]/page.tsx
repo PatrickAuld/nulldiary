@@ -34,7 +34,9 @@ export default async function MessagePage({
 
       <div className="detail-content">
         <article>
-          <p className="detail-text">{message.content}</p>
+          <p className="detail-text">
+            {message.edited_content ?? message.content}
+          </p>
           <div className="detail-meta">
             {displayDate && <time>{displayDate}</time>}
           </div>
