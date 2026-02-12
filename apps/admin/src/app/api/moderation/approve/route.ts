@@ -17,7 +17,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const body = await req.json();
-  const { messageId, reason } = body;
+  const { messageId, reason, editedContent } = body;
 
   if (!messageId || typeof messageId !== "string") {
     return NextResponse.json(
@@ -26,13 +26,46 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const actor = user.email || user.id;
-  const result = await approveMessage(getDb(), { messageId, actor, reason });
-
-  if (!result.ok) {
-    const status = result.error === "Message not found" ? 404 : 400;
-    return NextResponse.json({ error: result.error }, { status });
+  if (editedContent !== undefined && typeof editedContent !== "string") {
+    return NextResponse.json(
+      { error: "editedContent must be a string" },
+      { status: 400 },
+    );
   }
 
-  return NextResponse.json({ ok: true });
+  const actor = user.email || user.id;
+
+  try {
+    const result = await approveMessage(getDb(), {
+      messageId,
+      actor,
+      reason,
+      editedContent: editedContent?.trim() || undefined,
+    });
+
+    if (!result.ok) {
+      const status = result.error === "Message not found" ? 404 : 400;
+      return NextResponse.json({ error: result.error }, { status });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    // Ensure the client always gets JSON, otherwise the UI can appear to hang.
+    const e = err as { code?: string; message?: string };
+
+    if (e?.code === "PGRST204") {
+      return NextResponse.json(
+        {
+          error:
+            "Database schema is missing edited_content (run migrations for this environment)",
+        },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: e?.message ?? "Failed to approve message" },
+      { status: 500 },
+    );
+  }
 }

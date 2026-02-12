@@ -30,6 +30,14 @@ export function MessageDetail({
           </p>
         )}
         <pre>{message.content}</pre>
+
+        {message.edited_content &&
+          message.edited_content !== message.content && (
+            <>
+              <h3 style={{ marginTop: "1rem" }}>Edited version</h3>
+              <pre>{message.edited_content}</pre>
+            </>
+          )}
       </div>
 
       <div className="detail-section">

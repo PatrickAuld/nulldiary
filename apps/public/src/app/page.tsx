@@ -50,9 +50,9 @@ export default async function HomePage({
           key={msg.id}
           href={`/messages/${msg.id}`}
           className="secret-item"
-          data-size={secretSize(msg.content)}
+          data-size={secretSize(msg.edited_content ?? msg.content)}
         >
-          <p className="secret-text">{msg.content}</p>
+          <p className="secret-text">{msg.edited_content ?? msg.content}</p>
           <div className="secret-meta">
             <span className="secret-number">
               No. {String(total - offset - i).padStart(3, "0")}

@@ -29,7 +29,10 @@ export default async function MessageDetailPage({
       <MessageDetail message={message} events={events} />
 
       {message.moderation_status === "pending" && (
-        <ModerationForm messageId={message.id} />
+        <ModerationForm
+          messageId={message.id}
+          defaultEditedContent={message.edited_content ?? message.content}
+        />
       )}
     </div>
   );

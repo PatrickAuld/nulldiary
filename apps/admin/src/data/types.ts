@@ -11,6 +11,7 @@ export interface ModerationInput {
   messageId: string;
   actor: string;
   reason?: string;
+  editedContent?: string;
 }
 
 export type ModerationResult = { ok: true } | { ok: false; error: string };

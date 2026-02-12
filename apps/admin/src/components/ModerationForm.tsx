@@ -2,8 +2,15 @@
 
 import { useState } from "react";
 
-export function ModerationForm({ messageId }: { messageId: string }) {
+export function ModerationForm({
+  messageId,
+  defaultEditedContent,
+}: {
+  messageId: string;
+  defaultEditedContent: string;
+}) {
   const [reason, setReason] = useState("");
+  const [editedContent, setEditedContent] = useState(defaultEditedContent);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -13,21 +20,38 @@ export function ModerationForm({ messageId }: { messageId: string }) {
     setStatus("loading");
     setErrorMessage("");
 
-    const res = await fetch(`/api/moderation/${action}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messageId,
-        reason: reason.trim() || undefined,
-      }),
-    });
+    try {
+      const res = await fetch(`/api/moderation/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId,
+          reason: reason.trim() || undefined,
+          ...(action === "approve"
+            ? { editedContent: editedContent.trim() || undefined }
+            : {}),
+        }),
+      });
 
-    if (res.ok) {
-      setStatus("success");
-      window.location.reload();
-    } else {
-      const body = await res.json();
-      setErrorMessage(body.error ?? "An error occurred");
+      if (res.ok) {
+        setStatus("success");
+        window.location.reload();
+        return;
+      }
+
+      let body: { error?: string } | null = null;
+      try {
+        body = (await res.json()) as { error?: string };
+      } catch {
+        // If the server returns HTML/plaintext, avoid leaving the UI stuck.
+      }
+
+      setErrorMessage(body?.error ?? `Request failed (${res.status})`);
+      setStatus("error");
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Network error while moderating",
+      );
       setStatus("error");
     }
   }
@@ -35,6 +59,17 @@ export function ModerationForm({ messageId }: { messageId: string }) {
   return (
     <div className="detail-section">
       <h2>Moderate</h2>
+      <div style={{ marginBottom: "0.5rem" }}>
+        <label htmlFor="editedContent">Edited content</label>
+        <textarea
+          id="editedContent"
+          value={editedContent}
+          onChange={(e) => setEditedContent(e.target.value)}
+          placeholder="The version that will be shown publicly"
+          rows={6}
+        />
+      </div>
+
       <div style={{ marginBottom: "0.5rem" }}>
         <label htmlFor="reason">Reason (optional)</label>
         <textarea
