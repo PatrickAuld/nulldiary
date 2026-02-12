@@ -49,7 +49,7 @@ export default async function HomePage({
         {featured.messages.map((msg) => (
           <a
             key={msg.id}
-            href={msg.short_id ? `/m/${msg.short_id}` : `/messages/${msg.id}`}
+            href={`/m/${msg.short_id}`}
             className="secret-item"
             data-size={secretSize(msg.edited_content ?? msg.content)}
           >
@@ -89,7 +89,7 @@ export default async function HomePage({
       {messages.map((msg, i) => (
         <a
           key={msg.id}
-          href={msg.short_id ? `/m/${msg.short_id}` : `/messages/${msg.id}`}
+          href={`/m/${msg.short_id}`}
           className="secret-item"
           data-size={secretSize(msg.edited_content ?? msg.content)}
         >

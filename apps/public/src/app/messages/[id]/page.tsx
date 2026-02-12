@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getApprovedMessageByIdCached } from "@/data/queries";
 
 export const revalidate = 600;
@@ -14,6 +14,10 @@ export default async function MessagePage({
 
   if (!message) {
     notFound();
+  }
+
+  if (message.short_id) {
+    redirect(`/m/${message.short_id}`);
   }
 
   const displayDate = message.approved_at

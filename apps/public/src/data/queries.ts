@@ -20,6 +20,7 @@ async function _getApprovedMessages(
     .from("messages")
     .select("*")
     .eq("moderation_status", "approved")
+    .not("short_id", "is", null)
     .order("approved_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -28,7 +29,8 @@ async function _getApprovedMessages(
   const { count, error: countError } = await db
     .from("messages")
     .select("*", { count: "exact", head: true })
-    .eq("moderation_status", "approved");
+    .eq("moderation_status", "approved")
+    .not("short_id", "is", null);
 
   if (countError) throw countError;
 
@@ -143,7 +145,7 @@ async function _getCurrentFeaturedSetWithMessages(
 
   const messages = (rows ?? [])
     .map((r) => (r as any).message as Message | null)
-    .filter((m): m is Message => Boolean(m));
+    .filter((m): m is Message => Boolean(m) && Boolean(m.short_id));
 
   return { set, messages };
 }
