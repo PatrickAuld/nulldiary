@@ -48,6 +48,24 @@ async function _getApprovedMessageById(
 }
 
 /**
+ * Uncached query helpers (useful for tests and any callers that already have a
+ * Db instance).
+ */
+export async function getApprovedMessages(
+  db: Db,
+  opts: { limit?: number; offset?: number },
+): Promise<{ messages: Message[]; total: number }> {
+  return _getApprovedMessages(db, opts);
+}
+
+export async function getApprovedMessageById(
+  db: Db,
+  id: string,
+): Promise<Message | null> {
+  return _getApprovedMessageById(db, id);
+}
+
+/**
  * Cached, ISR-friendly query for public pages.
  *
  * NOTE: We intentionally create the DB client inside the cached function so
