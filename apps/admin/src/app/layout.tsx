@@ -13,6 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <nav>
           <a href="/messages">Messages</a>
           <a href="/featured">Featured</a>
+          <a href="/db-ops">DB Ops</a>
           <UserNav />
         </nav>
         <main>{children}</main>
