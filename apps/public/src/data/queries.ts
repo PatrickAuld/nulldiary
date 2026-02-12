@@ -1,6 +1,10 @@
 import type { Db, Message } from "@nulldiary/db";
+import { unstable_cache } from "next/cache";
+import { getDb } from "@/lib/db";
 
-export async function getApprovedMessages(
+const PUBLIC_REVALIDATE_SECONDS = 60;
+
+async function _getApprovedMessages(
   db: Db,
   opts: { limit?: number; offset?: number },
 ): Promise<{ messages: Message[]; total: number }> {
@@ -26,7 +30,7 @@ export async function getApprovedMessages(
   return { messages: (data ?? []) as Message[], total: count ?? 0 };
 }
 
-export async function getApprovedMessageById(
+async function _getApprovedMessageById(
   db: Db,
   id: string,
 ): Promise<Message | null> {
@@ -42,3 +46,25 @@ export async function getApprovedMessageById(
 
   return data as Message;
 }
+
+/**
+ * Cached, ISR-friendly query for public pages.
+ *
+ * NOTE: We intentionally create the DB client inside the cached function so
+ * Next.js can memoize results (not the client instance).
+ */
+export const getApprovedMessagesCached = unstable_cache(
+  async (opts: { limit?: number; offset?: number }) => {
+    return _getApprovedMessages(getDb(), opts);
+  },
+  ["public:getApprovedMessages"],
+  { revalidate: PUBLIC_REVALIDATE_SECONDS },
+);
+
+export const getApprovedMessageByIdCached = unstable_cache(
+  async (id: string) => {
+    return _getApprovedMessageById(getDb(), id);
+  },
+  ["public:getApprovedMessageById"],
+  { revalidate: PUBLIC_REVALIDATE_SECONDS },
+);

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/db";
-import { getApprovedMessageById } from "@/data/queries";
+import { getApprovedMessageByIdCached } from "@/data/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function MessagePage({
   params,
@@ -11,8 +10,7 @@ export default async function MessagePage({
 }) {
   const { id } = await params;
 
-  const db = getDb();
-  const message = await getApprovedMessageById(db, id);
+  const message = await getApprovedMessageByIdCached(id);
 
   if (!message) {
     notFound();

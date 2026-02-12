@@ -1,5 +1,6 @@
-import { getDb } from "@/lib/db";
-import { getApprovedMessages } from "@/data/queries";
+import { getApprovedMessagesCached } from "@/data/queries";
+
+export const revalidate = 60;
 
 const PAGE_SIZE = 50;
 
@@ -18,7 +19,7 @@ function formatDate(date: Date | string): string {
   });
 }
 
-export const dynamic = "force-dynamic";
+// Cached via ISR (see `export const revalidate`).
 
 export default async function ArchivePage({
   searchParams,
@@ -29,8 +30,7 @@ export default async function ArchivePage({
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
 
-  const db = getDb();
-  const { messages, total } = await getApprovedMessages(db, {
+  const { messages, total } = await getApprovedMessagesCached({
     limit: PAGE_SIZE,
     offset,
   });

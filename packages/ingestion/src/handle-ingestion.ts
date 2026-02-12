@@ -10,5 +10,14 @@ export async function handleIngestion(
   const raw = await extractRequest(request);
   const parsed = parseMessage(raw);
   await persistIngestion(db, raw, parsed);
-  return Response.json({ status: parsed.status }, { status: 200 });
+  return Response.json(
+    { status: parsed.status },
+    {
+      status: 200,
+      headers: {
+        // Never cache ingestion responses.
+        "Cache-Control": "no-store",
+      },
+    },
+  );
 }
