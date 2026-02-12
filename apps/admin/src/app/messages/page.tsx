@@ -37,7 +37,12 @@ export default async function MessagesPage({
     <div>
       <h1>Messages</h1>
 
-      <form method="GET" action="/messages" className="filters">
+      <form
+        key={JSON.stringify(sp)}
+        method="GET"
+        action="/messages"
+        className="filters"
+      >
         <div>
           <label htmlFor="status">Status</label>
           <select id="status" name="status" defaultValue={status}>
