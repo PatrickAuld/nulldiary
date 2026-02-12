@@ -4,6 +4,11 @@ import { getDb } from "@/lib/db";
 
 const PUBLIC_REVALIDATE_SECONDS = 600;
 
+export type FeaturedSetWithMessages = {
+  set: { id: string; slug: string; title: string | null };
+  messages: Message[];
+};
+
 async function _getApprovedMessages(
   db: Db,
   opts: { limit?: number; offset?: number },
@@ -84,5 +89,45 @@ export const getApprovedMessageByIdCached = unstable_cache(
     return _getApprovedMessageById(getDb(), id);
   },
   ["public:getApprovedMessageById"],
+  { revalidate: PUBLIC_REVALIDATE_SECONDS },
+);
+
+async function _getCurrentFeaturedSetWithMessages(
+  db: Db,
+  nowIso: string,
+): Promise<FeaturedSetWithMessages | null> {
+  const { data: set, error } = await db
+    .from("featured_sets")
+    .select("id, slug, title")
+    .lte("starts_at", nowIso)
+    .gte("ends_at", nowIso)
+    .order("starts_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!set) return null;
+
+  const { data: rows, error: rowsError } = await db
+    .from("featured_set_messages")
+    .select("position, message:messages(*)")
+    .eq("set_id", set.id)
+    .order("position", { ascending: true });
+
+  if (rowsError) throw rowsError;
+
+  const messages = (rows ?? [])
+    .map((r) => (r as any).message as Message | null)
+    .filter((m): m is Message => Boolean(m));
+
+  return { set, messages };
+}
+
+export const getCurrentFeaturedSetWithMessagesCached = unstable_cache(
+  async () => {
+    const nowIso = new Date().toISOString();
+    return _getCurrentFeaturedSetWithMessages(getDb(), nowIso);
+  },
+  ["public:getCurrentFeaturedSetWithMessages"],
   { revalidate: PUBLIC_REVALIDATE_SECONDS },
 );

@@ -6,6 +6,8 @@ const nextConfig = {
     // CI runs lint separately; don't fail builds (Vercel) on lint rules.
     ignoreDuringBuilds: true,
   },
+  // Admin uses runtime env vars (Supabase) and should not be statically exported.
+  output: "standalone",
   webpack: (config) => {
     config.resolve.extensionAlias = {
       ".js": [".ts", ".js"],

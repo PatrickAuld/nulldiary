@@ -1,4 +1,7 @@
-import { getApprovedMessagesCached } from "@/data/queries";
+import {
+  getApprovedMessagesCached,
+  getCurrentFeaturedSetWithMessagesCached,
+} from "@/data/queries";
 
 export const revalidate = 600;
 
@@ -27,6 +30,44 @@ export default async function HomePage({
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
+
+  const featured = await getCurrentFeaturedSetWithMessagesCached();
+
+  // If we have an active featured set, show it first.
+  if (featured && featured.messages.length > 0) {
+    return (
+      <>
+        <div className="page-content">
+          <h1 className="page-heading">
+            {featured.set.title ?? "Today\'s featured"}
+          </h1>
+          <p className="page-description">
+            Curated selections that roll over automatically.
+          </p>
+        </div>
+
+        {featured.messages.map((msg) => (
+          <a
+            key={msg.id}
+            href={`/messages/${msg.id}`}
+            className="secret-item"
+            data-size={secretSize(msg.edited_content ?? msg.content)}
+          >
+            <p className="secret-text">{msg.edited_content ?? msg.content}</p>
+          </a>
+        ))}
+
+        <div className="page-content" style={{ marginTop: "2rem" }}>
+          <h2 className="page-heading" style={{ fontSize: "1.1rem" }}>
+            Archive
+          </h2>
+          <p className="page-description">
+            <a href="/archive">Browse all approved confessions</a>
+          </p>
+        </div>
+      </>
+    );
+  }
 
   const { messages, total } = await getApprovedMessagesCached({
     limit: PAGE_SIZE,
