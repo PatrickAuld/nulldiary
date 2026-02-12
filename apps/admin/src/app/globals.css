@@ -43,6 +43,13 @@ body {
   margin-top: 1rem;
 }
 
+.message-cards__toolbar {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #fafafa;
+}
+
 .message-card {
   border: 1px solid #e5e5e5;
   border-radius: 8px;
@@ -65,6 +72,21 @@ body {
 .message-card__view {
   margin-left: auto;
   font-weight: 600;
+}
+
+.message-card__box {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: #fcfcfc;
+}
+
+.message-card__box-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
 }
 
 .message-card__content {

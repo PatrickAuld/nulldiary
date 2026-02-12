@@ -44,6 +44,7 @@ export function MessageList({
   const [approveAddSet, setApproveAddSet] = useState<Record<string, string>>(
     {},
   );
+  const [autoApproveAddSetId, setAutoApproveAddSetId] = useState("");
 
   if (messages.length === 0) {
     return <p>No messages found.</p>;
@@ -140,7 +141,7 @@ export function MessageList({
   async function approveAndMaybeFeature(messageId: string) {
     await moderate("approve", messageId, { reload: false });
 
-    const setId = approveAddSet[messageId];
+    const setId = approveAddSet[messageId] || autoApproveAddSetId;
     if (setId) {
       await addToFeaturedSet(messageId, setId);
     }
@@ -150,6 +151,23 @@ export function MessageList({
 
   return (
     <div className="message-cards">
+      <div className="message-cards__toolbar">
+        <label>
+          Auto-add approved messages to featured set (optional)
+          <select
+            value={autoApproveAddSetId}
+            onChange={(e) => setAutoApproveAddSetId(e.target.value)}
+          >
+            <option value="">—</option>
+            {featuredSets.map((set) => (
+              <option key={set.id} value={set.id}>
+                {set.title ?? set.slug}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       {messages.map((msg) => {
         const row = rows[msg.id] ?? {
           editedContent:
@@ -180,10 +198,21 @@ export function MessageList({
               </a>
             </header>
 
-            <p className="message-card__content">{msg.content}</p>
+            <div className="message-card__box">
+              <div className="message-card__box-title">Original message</div>
+              <p className="message-card__content">{msg.content}</p>
+            </div>
+
+            <div className="message-card__box">
+              <div className="message-card__box-title">
+                What will be shown
+                {msg.moderation_status === "approved" ? " (approved)" : ""}
+              </div>
+              <p className="message-card__content">{row.editedContent}</p>
+            </div>
 
             <details className="message-card__edit">
-              <summary>Edit (optional)</summary>
+              <summary>Edit what will be shown</summary>
               <div style={{ marginTop: 8 }}>
                 <textarea
                   value={row.editedContent}
