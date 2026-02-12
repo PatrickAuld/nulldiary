@@ -15,8 +15,10 @@ export function MessageList({ messages }: { messages: Message[] }) {
     for (const msg of messages) {
       const edited =
         // message.edited_content exists on some branches; fall back to content.
-        ((msg as any).edited_content as string | null | undefined) ??
-        msg.content;
+        ("edited_content" in msg &&
+        typeof (msg as { edited_content?: unknown }).edited_content === "string"
+          ? (msg as { edited_content: string }).edited_content
+          : null) ?? msg.content;
       map[msg.id] = {
         editedContent: edited,
         status: "idle",
@@ -41,7 +43,9 @@ export function MessageList({ messages }: { messages: Message[] }) {
     }));
 
     try {
-      const payload: any = { messageId };
+      const payload: { messageId: string; editedContent?: string } = {
+        messageId,
+      };
       if (action === "approve") {
         payload.editedContent =
           rows[messageId]?.editedContent?.trim() || undefined;
@@ -58,9 +62,9 @@ export function MessageList({ messages }: { messages: Message[] }) {
         return;
       }
 
-      let body: any = null;
+      let body: { error?: string } | null = null;
       try {
-        body = await res.json();
+        body = (await res.json()) as { error?: string };
       } catch {
         // ignore
       }
