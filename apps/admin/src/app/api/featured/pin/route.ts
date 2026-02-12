@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { pinFeaturedSet } from "@/data/featured";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request): Promise<Response> {
@@ -23,22 +24,11 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({ error: "setId is required" }, { status: 400 });
   }
 
-  const db = getDb();
+  const result = await pinFeaturedSet(getDb(), setId);
 
-  // Unpin all, then pin the requested one.
-  const { error: unpinError } = await db
-    .from("featured_sets")
-    .update({ pinned: false, updated_at: new Date().toISOString() })
-    .eq("pinned", true);
-
-  if (unpinError) throw unpinError;
-
-  const { error: pinError } = await db
-    .from("featured_sets")
-    .update({ pinned: true, updated_at: new Date().toISOString() })
-    .eq("id", setId);
-
-  if (pinError) throw pinError;
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  }
 
   return NextResponse.json({ ok: true });
 }

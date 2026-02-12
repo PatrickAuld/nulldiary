@@ -86,21 +86,13 @@ export default async function FeaturedSetDetailPage({
   async function pinSet() {
     "use server";
 
-    const db = getDb();
+    const result = await (
+      await import("@/data/featured")
+    ).pinFeaturedSet(getDb(), id);
 
-    const { error: unpinError } = await db
-      .from("featured_sets")
-      .update({ pinned: false, updated_at: new Date().toISOString() })
-      .eq("pinned", true);
-
-    if (unpinError) throw unpinError;
-
-    const { error: pinError } = await db
-      .from("featured_sets")
-      .update({ pinned: true, updated_at: new Date().toISOString() })
-      .eq("id", id);
-
-    if (pinError) throw pinError;
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
   }
 
   return (
