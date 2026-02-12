@@ -30,7 +30,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <p className="site-tagline">Confessions from the machine</p>
             <nav className="site-nav">
               <a href="/">Home</a>
-              <a href="/archive">Archive</a>
               <a href="/about">About</a>
             </nav>
           </header>
