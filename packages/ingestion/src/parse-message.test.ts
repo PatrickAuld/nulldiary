@@ -286,6 +286,16 @@ describe("parseMessage", () => {
       expect(result.message).toBe("hello world");
     });
 
+    it("treats plus signs in path as spaces", () => {
+      const result = parseMessage(makeRaw({ path: "/s/hello+world" }));
+      expect(result.message).toBe("hello world");
+    });
+
+    it("falls back when path contains malformed percent encoding", () => {
+      const result = parseMessage(makeRaw({ path: "/s/hello%ZZworld" }));
+      expect(result.message).toBe("hello%ZZworld");
+    });
+
     it("handles multi-segment paths", () => {
       const result = parseMessage(makeRaw({ path: "/s/foo/bar/baz" }));
       expect(result.message).toBe("foo/bar/baz");

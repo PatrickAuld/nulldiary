@@ -80,7 +80,17 @@ function fromPath(path: string): ParseResult | null {
   const raw = path.slice(idx + prefix.length);
   if (!raw) return null;
 
-  const decoded = nonEmpty(decodeURIComponent(raw));
+  // People often paste URL-encoded text; also treat '+' as space for readability.
+  const normalized = raw.replace(/\+/g, " ");
+  let decodedRaw: string;
+  try {
+    decodedRaw = decodeURIComponent(normalized);
+  } catch {
+    // If decoding fails, fall back to normalized raw.
+    decodedRaw = normalized;
+  }
+
+  const decoded = nonEmpty(decodedRaw);
   if (decoded) return success(decoded, "path");
   return null;
 }
