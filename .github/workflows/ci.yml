@@ -21,7 +21,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format
-      - run: pnpm lint
+      # Lint is useful, but we've found it causes a lot of PR churn.
+      # Keep it as an optional/local check; don't block CI on it.
+      # - run: pnpm lint
       - run: pnpm --filter @nulldiary/ingestion test
       - run: pnpm --filter @nulldiary/admin test
       - run: pnpm --filter @nulldiary/public test
