@@ -14,6 +14,8 @@ export const parseStatusEnum = pgEnum("parse_status", [
   "success",
   "partial",
   "failed",
+  "too_long",
+  "denied_ip",
 ]);
 
 export const moderationStatusEnum = pgEnum("moderation_status", [

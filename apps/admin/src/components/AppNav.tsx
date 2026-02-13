@@ -13,6 +13,7 @@ export function AppNav() {
     <nav>
       <a href="/messages">Messages</a>
       <a href="/featured">Featured</a>
+      <a href="/denylist">Denylist</a>
       <a href="/db-ops">DB Ops</a>
       <UserNav />
     </nav>

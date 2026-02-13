@@ -7,8 +7,12 @@ const QUERY_KEYS = ["message", "secret"] as const;
 
 function success(message: string, source: ParseSource): ParseResult {
   const max = Number.isFinite(MESSAGE_MAX_LENGTH) ? MESSAGE_MAX_LENGTH : 512;
-  const truncated = max > 0 ? message.slice(0, max) : "";
-  return { message: truncated, status: "success", source };
+
+  if (max > 0 && message.length > max) {
+    return { message: null, status: "too_long", source };
+  }
+
+  return { message, status: "success", source };
 }
 
 const FAILED: ParseResult = { message: null, status: "failed", source: null };

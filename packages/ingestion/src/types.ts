@@ -7,8 +7,10 @@ export interface RawRequest {
   contentType: string | null;
 }
 
-export type ParseSource = "header" | "body" | "query" | "path";
+export type ParseSource = "header" | "body" | "query" | "path" | "ip";
 
 export type ParseResult =
   | { message: string; status: "success"; source: ParseSource }
-  | { message: null; status: "failed"; source: null };
+  | { message: null; status: "failed"; source: null }
+  | { message: null; status: "too_long"; source: ParseSource }
+  | { message: null; status: "denied_ip"; source: "ip" };

@@ -43,6 +43,13 @@
       "when": 1770873660000,
       "tag": "0005_short_ids",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1770941340000,
+      "tag": "0006_ip_denylist",
+      "breakpoints": true
     }
   ]
 }

@@ -39,6 +39,9 @@ export async function persistIngestion(
     }
   }
 
+  const forwarded = raw.headers["x-forwarded-for"];
+  const sourceIp = forwarded ? forwarded.split(",")[0]?.trim() : null;
+
   const { error } = await db.from("ingestion_events").insert({
     id: uuidv7(),
     method: raw.method,
@@ -46,6 +49,7 @@ export async function persistIngestion(
     query: raw.query,
     headers: raw.headers,
     body: raw.body,
+    source_ip: sourceIp || null,
     user_agent: raw.headers["user-agent"] ?? null,
     parsed_message: parsed.message,
     parse_status: parsed.status,
