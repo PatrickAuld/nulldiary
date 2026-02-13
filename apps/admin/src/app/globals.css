@@ -33,7 +33,102 @@ body {
 }
 
 .messages-table {
-  min-width: 920px; /* keep columns usable; scroll on small screens */
+  min-width: 920px; /* legacy table layout; avoid on mobile */
+}
+
+.message-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.message-cards__toolbar {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #fafafa;
+}
+
+.message-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #fff;
+}
+
+.message-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.message-card__created {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.message-card__view {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.message-card__box {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: #fcfcfc;
+}
+
+.message-card__box-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.message-card__content {
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.message-card__edit summary,
+.message-card__featured summary {
+  cursor: pointer;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.message-card__quick-feature {
+  margin-top: 0.5rem;
+}
+
+.message-card__quick-feature label {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.message-card__quick-feature select {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .message-card__actions {
+    flex-direction: column;
+  }
+
+  .message-card__view {
+    margin-left: 0;
+  }
 }
 
 nav {
