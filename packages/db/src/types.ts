@@ -41,8 +41,7 @@ export interface FeaturedSet {
   id: string;
   slug: string;
   title: string | null;
-  starts_at: string;
-  ends_at: string;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -52,5 +51,12 @@ export interface FeaturedSetMessage {
   set_id: string;
   message_id: string;
   position: number;
+  created_at: string;
+}
+
+export interface AdminUser {
+  id: string;
+  user_id: string;
+  email: string | null;
   created_at: string;
 }

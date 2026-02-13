@@ -5,4 +5,5 @@ export type {
   ModerationAction,
   FeaturedSet,
   FeaturedSetMessage,
+  AdminUser,
 } from "./types.js";

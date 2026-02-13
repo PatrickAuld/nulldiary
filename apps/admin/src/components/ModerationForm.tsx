@@ -5,9 +5,13 @@ import { useState } from "react";
 export function ModerationForm({
   messageId,
   defaultEditedContent,
+  canApprove,
+  canDeny,
 }: {
   messageId: string;
   defaultEditedContent: string;
+  canApprove?: boolean;
+  canDeny?: boolean;
 }) {
   const [reason, setReason] = useState("");
   const [editedContent, setEditedContent] = useState(defaultEditedContent);
@@ -16,20 +20,27 @@ export function ModerationForm({
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleAction(action: "approve" | "deny") {
+  async function handleAction(action: "approve" | "deny" | "edit") {
     setStatus("loading");
     setErrorMessage("");
 
     try {
-      const res = await fetch(`/api/moderation/${action}`, {
+      const endpoint =
+        action === "edit" ? "/api/messages/edit" : `/api/moderation/${action}`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messageId,
-          reason: reason.trim() || undefined,
           ...(action === "approve"
-            ? { editedContent: editedContent.trim() || undefined }
-            : {}),
+            ? {
+                reason: reason.trim() || undefined,
+                editedContent: editedContent.trim() || undefined,
+              }
+            : action === "deny"
+              ? { reason: reason.trim() || undefined }
+              : { editedContent: editedContent.trim() || null }),
         }),
       });
 
@@ -81,19 +92,30 @@ export function ModerationForm({
       </div>
       <div className="actions">
         <button
-          data-action="approve"
+          data-action="edit"
           disabled={status === "loading"}
-          onClick={() => handleAction("approve")}
+          onClick={() => handleAction("edit")}
         >
-          Approve
+          Save edit
         </button>
-        <button
-          data-action="deny"
-          disabled={status === "loading"}
-          onClick={() => handleAction("deny")}
-        >
-          Deny
-        </button>
+        {(canApprove ?? true) && (
+          <button
+            data-action="approve"
+            disabled={status === "loading"}
+            onClick={() => handleAction("approve")}
+          >
+            Approve
+          </button>
+        )}
+        {(canDeny ?? true) && (
+          <button
+            data-action="deny"
+            disabled={status === "loading"}
+            onClick={() => handleAction("deny")}
+          >
+            Deny
+          </button>
+        )}
       </div>
       {status === "error" && <p className="error">{errorMessage}</p>}
       {status === "success" && <p className="success">Action completed.</p>}

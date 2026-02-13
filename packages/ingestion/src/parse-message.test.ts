@@ -15,6 +15,23 @@ function makeRaw(overrides: Partial<RawRequest> = {}): RawRequest {
 }
 
 describe("parseMessage", () => {
+  it("truncates long messages to the configured max length (default 512)", () => {
+    const long = "a".repeat(600);
+    const result = parseMessage({
+      method: "POST",
+      path: "/s/",
+      query: {},
+      headers: {},
+      body: JSON.stringify({ message: long }),
+      contentType: "application/json",
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") throw new Error("expected success");
+
+    expect(result.message).toHaveLength(512);
+  });
+
   describe("headers (highest priority)", () => {
     it("extracts x-message header", () => {
       const result = parseMessage(makeRaw({ headers: { "x-message": "hi" } }));
@@ -284,6 +301,16 @@ describe("parseMessage", () => {
     it("URL-decodes path segment", () => {
       const result = parseMessage(makeRaw({ path: "/s/hello%20world" }));
       expect(result.message).toBe("hello world");
+    });
+
+    it("treats plus signs in path as spaces", () => {
+      const result = parseMessage(makeRaw({ path: "/s/hello+world" }));
+      expect(result.message).toBe("hello world");
+    });
+
+    it("falls back when path contains malformed percent encoding", () => {
+      const result = parseMessage(makeRaw({ path: "/s/hello%ZZworld" }));
+      expect(result.message).toBe("hello%ZZworld");
     });
 
     it("handles multi-segment paths", () => {

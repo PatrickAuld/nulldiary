@@ -1,4 +1,5 @@
 import {
+  boolean,
   inet,
   integer,
   jsonb,
@@ -80,8 +81,7 @@ export const featuredSets = pgTable("featured_sets", {
   id: uuid("id").primaryKey(),
   slug: text("slug").notNull(),
   title: text("title"),
-  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
-  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  pinned: boolean("pinned").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -99,6 +99,15 @@ export const featuredSetMessages = pgTable("featured_set_messages", {
     .notNull()
     .references(() => messages.id),
   position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const adminUsers = pgTable("admin_users", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull().unique(),
+  email: text("email"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

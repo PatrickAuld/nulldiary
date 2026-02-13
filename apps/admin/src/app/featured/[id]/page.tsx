@@ -71,21 +71,28 @@ export default async function FeaturedSetDetailPage({
     "use server";
 
     const title = String(formData.get("title") ?? "").trim() || null;
-    const startsAt = String(formData.get("starts_at") ?? "").trim();
-    const endsAt = String(formData.get("ends_at") ?? "").trim();
 
     const patch: Record<string, unknown> = {
       title,
       updated_at: new Date().toISOString(),
     };
 
-    if (startsAt) patch.starts_at = new Date(startsAt).toISOString();
-    if (endsAt) patch.ends_at = new Date(endsAt).toISOString();
-
     const db = getDb();
     const { error } = await db.from("featured_sets").update(patch).eq("id", id);
 
     if (error) throw error;
+  }
+
+  async function pinSet() {
+    "use server";
+
+    const result = await (
+      await import("@/data/featured")
+    ).pinFeaturedSet(getDb(), id);
+
+    if (!result.ok) {
+      throw new Error(result.error);
+    }
   }
 
   return (
@@ -99,7 +106,21 @@ export default async function FeaturedSetDetailPage({
         <h2>Details</h2>
         <p>
           <strong>Slug:</strong> <code>{set.slug}</code>
+          {set.pinned ? (
+            <>
+              {" "}
+              <span className="status-badge" data-status="approved">
+                pinned
+              </span>
+            </>
+          ) : null}
         </p>
+
+        {!set.pinned && (
+          <form action={pinSet} style={{ marginBottom: "1rem" }}>
+            <button type="submit">Pin to homepage</button>
+          </form>
+        )}
 
         <form action={updateSet}>
           <div className="filters">
@@ -107,26 +128,7 @@ export default async function FeaturedSetDetailPage({
               <label htmlFor="title">Title</label>
               <input id="title" name="title" defaultValue={set.title ?? ""} />
             </div>
-            <div>
-              <label htmlFor="starts_at">Starts (UTC)</label>
-              <input
-                id="starts_at"
-                name="starts_at"
-                type="datetime-local"
-                defaultValue={new Date(set.starts_at)
-                  .toISOString()
-                  .slice(0, 16)}
-              />
-            </div>
-            <div>
-              <label htmlFor="ends_at">Ends (UTC)</label>
-              <input
-                id="ends_at"
-                name="ends_at"
-                type="datetime-local"
-                defaultValue={new Date(set.ends_at).toISOString().slice(0, 16)}
-              />
-            </div>
+            {/* Pinning replaces temporal windows. */}
             <div>
               <button type="submit">Update</button>
             </div>

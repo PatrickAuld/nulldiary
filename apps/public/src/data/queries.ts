@@ -121,14 +121,11 @@ export const getApprovedMessageByShortIdCached = unstable_cache(
 
 async function _getCurrentFeaturedSetWithMessages(
   db: Db,
-  nowIso: string,
 ): Promise<FeaturedSetWithMessages | null> {
   const { data: set, error } = await db
     .from("featured_sets")
     .select("id, slug, title")
-    .lte("starts_at", nowIso)
-    .gte("ends_at", nowIso)
-    .order("starts_at", { ascending: false })
+    .eq("pinned", true)
     .limit(1)
     .maybeSingle();
 
@@ -152,8 +149,7 @@ async function _getCurrentFeaturedSetWithMessages(
 
 export const getCurrentFeaturedSetWithMessagesCached = unstable_cache(
   async () => {
-    const nowIso = new Date().toISOString();
-    return _getCurrentFeaturedSetWithMessages(getDb(), nowIso);
+    return _getCurrentFeaturedSetWithMessages(getDb());
   },
   ["public:getCurrentFeaturedSetWithMessages"],
   { revalidate: PUBLIC_REVALIDATE_SECONDS },

@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { listMessages } from "@/data/queries";
 import { MessageList } from "@/components/MessageList";
 import { MessagesFilters } from "@/components/MessagesFilters";
+import { listFeaturedMemberships, listFeaturedSets } from "@/data/featured";
 
 interface SearchParams {
   status?: string;
@@ -25,7 +26,9 @@ export default async function MessagesPage({
   const limit = Number(sp.limit ?? 50);
   const offset = Number(sp.offset ?? 0);
 
-  const { messages, total } = await listMessages(getDb(), {
+  const db = getDb();
+
+  const { messages, total } = await listMessages(db, {
     status,
     search,
     after,
@@ -33,6 +36,18 @@ export default async function MessagesPage({
     limit,
     offset,
   });
+
+  const featuredSets = await listFeaturedSets(db);
+  const memberships = await listFeaturedMemberships(
+    db,
+    messages.map((m) => m.id),
+  );
+
+  const featuredMemberships: Record<string, string[]> = {};
+  for (const row of memberships) {
+    featuredMemberships[row.message_id] ??= [];
+    featuredMemberships[row.message_id].push(row.set_id);
+  }
 
   return (
     <div>
@@ -50,7 +65,11 @@ export default async function MessagesPage({
         {offset > 0 && ` (offset ${offset})`}
       </p>
 
-      <MessageList messages={messages} />
+      <MessageList
+        messages={messages}
+        featuredSets={featuredSets}
+        featuredMemberships={featuredMemberships}
+      />
 
       {total > offset + limit && (
         <p style={{ marginTop: "1rem" }}>

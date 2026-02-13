@@ -9,7 +9,7 @@ export default async function FeaturedSetsPage() {
   const { data: sets, error } = await db
     .from("featured_sets")
     .select("*")
-    .order("starts_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .limit(50);
 
   if (error) {
@@ -21,20 +21,15 @@ export default async function FeaturedSetsPage() {
 
     const slug = String(formData.get("slug") ?? "").trim();
     const title = String(formData.get("title") ?? "").trim() || null;
-    const startsAt = String(formData.get("starts_at") ?? "").trim();
-    const endsAt = String(formData.get("ends_at") ?? "").trim();
-
     if (!slug) throw new Error("slug is required");
-    if (!startsAt) throw new Error("starts_at is required");
-    if (!endsAt) throw new Error("ends_at is required");
 
     const db = getDb();
     const { error } = await db.from("featured_sets").insert({
       id: uuidv7(),
       slug,
       title,
-      starts_at: new Date(startsAt).toISOString(),
-      ends_at: new Date(endsAt).toISOString(),
+      pinned: false,
+      updated_at: new Date().toISOString(),
     });
 
     if (error) throw error;
@@ -45,9 +40,8 @@ export default async function FeaturedSetsPage() {
       <h1>Featured sets</h1>
 
       <p>
-        Featured sets are time-windowed collections. The public home page shows
-        the set whose <code>starts_at</code> / <code>ends_at</code> contains
-        “now”.
+        Featured sets are named collections. One set can be pinned at a time;
+        the public home page shows the pinned set.
       </p>
 
       <h2>Create a set</h2>
@@ -66,14 +60,7 @@ export default async function FeaturedSetsPage() {
             <label htmlFor="title">Title (optional)</label>
             <input id="title" name="title" placeholder="Today’s featured" />
           </div>
-          <div>
-            <label htmlFor="starts_at">Starts (UTC)</label>
-            <input id="starts_at" name="starts_at" type="datetime-local" />
-          </div>
-          <div>
-            <label htmlFor="ends_at">Ends (UTC)</label>
-            <input id="ends_at" name="ends_at" type="datetime-local" />
-          </div>
+          {/* Pinning replaces temporal windows. */}
           <div>
             <button type="submit">Create</button>
           </div>
@@ -88,8 +75,7 @@ export default async function FeaturedSetsPage() {
             <tr>
               <th>Slug</th>
               <th>Title</th>
-              <th>Starts</th>
-              <th>Ends</th>
+              <th>Pinned</th>
               <th></th>
             </tr>
           </thead>
@@ -100,8 +86,7 @@ export default async function FeaturedSetsPage() {
                   <code>{s.slug}</code>
                 </td>
                 <td>{s.title ?? ""}</td>
-                <td>{new Date(s.starts_at).toISOString()}</td>
-                <td>{new Date(s.ends_at).toISOString()}</td>
+                <td>{s.pinned ? "yes" : ""}</td>
                 <td>
                   <a href={`/featured/${s.id}`}>Edit</a>
                 </td>

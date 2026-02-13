@@ -26,8 +26,22 @@
     {
       "idx": 3,
       "version": "5",
+      "when": 1770868740000,
+      "tag": "0003_enable_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1770904680000,
+      "tag": "0004_featured_sets_pinning",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
       "when": 1770873660000,
-      "tag": "0003_short_ids",
+      "tag": "0005_short_ids",
       "breakpoints": true
     }
   ]
