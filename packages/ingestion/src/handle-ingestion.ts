@@ -20,14 +20,11 @@ function getClientIp(headers: Record<string, string>): string | null {
 }
 
 async function isDeniedIp(db: Db, ip: string): Promise<boolean> {
-  const { data, error } = await db
-    .from("ip_denylist")
-    .select("ip")
-    .eq("ip", ip)
-    .maybeSingle();
+  // Use a DB function so we can support both single IPs and CIDR ranges.
+  const { data, error } = await db.rpc("ip_is_denied", { p_ip: ip });
 
   if (error) throw error;
-  return !!data;
+  return Boolean(data);
 }
 
 export async function handleIngestion(
