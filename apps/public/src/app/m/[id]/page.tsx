@@ -1,23 +1,19 @@
-import { notFound, redirect } from "next/navigation";
-import { getApprovedMessageByIdCached } from "@/data/queries";
+import { notFound } from "next/navigation";
+import { getApprovedMessageByShortIdCached } from "@/data/queries";
 
 export const revalidate = 600;
 
-export default async function MessagePage({
+export default async function ShortMessagePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
 
-  const message = await getApprovedMessageByIdCached(id);
+  const message = await getApprovedMessageByShortIdCached(id);
 
   if (!message) {
     notFound();
-  }
-
-  if (message.short_id) {
-    redirect(`/m/${message.short_id}`);
   }
 
   const displayDate = message.approved_at

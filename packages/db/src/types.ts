@@ -9,6 +9,7 @@ export interface Message {
   moderation_status: "pending" | "approved" | "denied";
   moderated_by: string | null;
   tags: string[] | null;
+  short_id: string | null;
 }
 
 export interface IngestionEvent {
@@ -33,5 +34,29 @@ export interface ModerationAction {
   action: "approved" | "denied";
   actor: string;
   reason: string | null;
+  created_at: string;
+}
+
+export interface FeaturedSet {
+  id: string;
+  slug: string;
+  title: string | null;
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FeaturedSetMessage {
+  id: string;
+  set_id: string;
+  message_id: string;
+  position: number;
+  created_at: string;
+}
+
+export interface AdminUser {
+  id: string;
+  user_id: string;
+  email: string | null;
   created_at: string;
 }

@@ -2,6 +2,7 @@
 
 import type { Message } from "@nulldiary/db";
 import { useMemo, useState } from "react";
+import { FeaturedSetsPicker } from "@/components/FeaturedSetsPicker";
 
 type RowState = {
   editedContent: string;
@@ -9,16 +10,28 @@ type RowState = {
   error?: string;
 };
 
-export function MessageList({ messages }: { messages: Message[] }) {
+export function MessageList({
+  messages,
+  featuredSets,
+  featuredMemberships,
+}: {
+  messages: Message[];
+  featuredSets: import("@/data/featured").FeaturedSetRow[];
+  featuredMemberships: Record<string, string[]>;
+}) {
   const initialState = useMemo(() => {
     const map: Record<string, RowState> = {};
     for (const msg of messages) {
-      const edited =
+      const editedRaw =
         // message.edited_content exists on some branches; fall back to content.
-        ("edited_content" in msg &&
+        "edited_content" in msg &&
         typeof (msg as { edited_content?: unknown }).edited_content === "string"
           ? (msg as { edited_content: string }).edited_content
-          : null) ?? msg.content;
+          : null;
+
+      const edited =
+        editedRaw && editedRaw.trim().length > 0 ? editedRaw : msg.content;
+
       map[msg.id] = {
         editedContent: edited,
         status: "idle",
@@ -28,14 +41,19 @@ export function MessageList({ messages }: { messages: Message[] }) {
   }, [messages]);
 
   const [rows, setRows] = useState<Record<string, RowState>>(initialState);
+  const [approveAddSet, setApproveAddSet] = useState<Record<string, string>>(
+    {},
+  );
+  const [autoApproveAddSetId, setAutoApproveAddSetId] = useState("");
 
   if (messages.length === 0) {
     return <p>No messages found.</p>;
   }
 
   async function moderate(
-    action: "approve" | "deny",
+    action: "approve" | "deny" | "edit",
     messageId: string,
+    opts: { reload?: boolean } = {},
   ): Promise<void> {
     setRows((prev) => ({
       ...prev,
@@ -43,22 +61,32 @@ export function MessageList({ messages }: { messages: Message[] }) {
     }));
 
     try {
-      const payload: { messageId: string; editedContent?: string } = {
+      const payload: { messageId: string; editedContent?: string | null } = {
         messageId,
       };
+
       if (action === "approve") {
         payload.editedContent =
           rows[messageId]?.editedContent?.trim() || undefined;
       }
 
-      const res = await fetch(`/api/moderation/${action}`, {
+      if (action === "edit") {
+        payload.editedContent = rows[messageId]?.editedContent?.trim() || null;
+      }
+
+      const endpoint =
+        action === "edit" ? "/api/messages/edit" : `/api/moderation/${action}`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        window.location.reload();
+        if (opts.reload ?? true) {
+          window.location.reload();
+        }
         return;
       }
 
@@ -89,33 +117,103 @@ export function MessageList({ messages }: { messages: Message[] }) {
     }
   }
 
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th>Content</th>
-          <th>Edited</th>
-          <th>Status</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {messages.map((msg) => {
-          const row = rows[msg.id] ?? {
-            editedContent: msg.content,
-            status: "idle" as const,
-          };
-          const isLoading = row.status === "loading";
+  async function addToFeaturedSet(messageId: string, setId: string) {
+    const res = await fetch("/api/featured/membership", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ op: "add", messageId, setId }),
+    });
 
-          return (
-            <tr key={msg.id}>
-              <td>
-                {msg.content.length > 100
-                  ? msg.content.slice(0, 100) + "..."
-                  : msg.content}
-              </td>
-              <td style={{ minWidth: 320 }}>
+    if (!res.ok) {
+      let body: { error?: string } | null = null;
+      try {
+        body = (await res.json()) as { error?: string };
+      } catch {
+        // ignore
+      }
+
+      throw new Error(
+        body?.error ?? `Failed to add to featured set (${res.status})`,
+      );
+    }
+  }
+
+  async function approveAndMaybeFeature(messageId: string) {
+    await moderate("approve", messageId, { reload: false });
+
+    const setId = approveAddSet[messageId] || autoApproveAddSetId;
+    if (setId) {
+      await addToFeaturedSet(messageId, setId);
+    }
+
+    window.location.reload();
+  }
+
+  return (
+    <div className="message-cards">
+      <div className="message-cards__toolbar">
+        <label>
+          Auto-add approved messages to featured set (optional)
+          <select
+            value={autoApproveAddSetId}
+            onChange={(e) => setAutoApproveAddSetId(e.target.value)}
+          >
+            <option value="">—</option>
+            {featuredSets.map((set) => (
+              <option key={set.id} value={set.id}>
+                {set.title ?? set.slug}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {messages.map((msg) => {
+        const row = rows[msg.id] ?? {
+          editedContent:
+            "edited_content" in msg &&
+            typeof (msg as { edited_content?: unknown }).edited_content ===
+              "string" &&
+            (msg as { edited_content: string }).edited_content.trim().length > 0
+              ? (msg as { edited_content: string }).edited_content
+              : msg.content,
+          status: "idle" as const,
+        };
+        const isLoading = row.status === "loading";
+
+        return (
+          <article key={msg.id} className="message-card">
+            <header className="message-card__header">
+              <span
+                className="status-badge"
+                data-status={msg.moderation_status}
+              >
+                {msg.moderation_status}
+              </span>
+              <span className="message-card__created">
+                {new Date(msg.created_at).toLocaleString()}
+              </span>
+              <a className="message-card__view" href={`/messages/${msg.id}`}>
+                View
+              </a>
+            </header>
+
+            <div className="message-card__box">
+              <div className="message-card__box-title">Original message</div>
+              <p className="message-card__content">{msg.content}</p>
+            </div>
+
+            <div className="message-card__box">
+              <div className="message-card__box-title">
+                What will be shown
+                {msg.moderation_status === "approved" ? " (approved)" : ""}
+              </div>
+              <p className="message-card__content">{row.editedContent}</p>
+            </div>
+
+            <details className="message-card__edit">
+              <summary>Edit what will be shown</summary>
+              <div style={{ marginTop: 8 }}>
                 <textarea
                   value={row.editedContent}
                   onChange={(e) =>
@@ -127,53 +225,79 @@ export function MessageList({ messages }: { messages: Message[] }) {
                       },
                     }))
                   }
-                  rows={3}
-                  style={{ width: "100%" }}
-                  placeholder="Edited content used for approval"
+                  rows={5}
+                  placeholder="The version that will be shown publicly"
                 />
-              </td>
-              <td>
-                <span
-                  className="status-badge"
-                  data-status={msg.moderation_status}
-                >
-                  {msg.moderation_status}
-                </span>
-              </td>
-              <td>{new Date(msg.created_at).toLocaleString()}</td>
-              <td>
-                <details>
-                  <summary style={{ cursor: "pointer" }}>Actions</summary>
-                  <div
-                    style={{ display: "flex", gap: "0.5rem", paddingTop: 8 }}
+                <div className="message-card__actions" style={{ marginTop: 8 }}>
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => moderate("edit", msg.id)}
                   >
-                    <a href={`/messages/${msg.id}`}>View</a>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => moderate("approve", msg.id)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => moderate("deny", msg.id)}
-                    >
-                      Deny
-                    </button>
-                  </div>
-                  {row.status === "error" && (
-                    <p className="error" style={{ marginTop: 8 }}>
-                      {row.error}
-                    </p>
-                  )}
-                </details>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                    Save edit
+                  </button>
+                </div>
+              </div>
+            </details>
+
+            {msg.moderation_status === "approved" ? (
+              <details className="message-card__featured">
+                <summary>Featured sets</summary>
+                <div style={{ marginTop: 8 }}>
+                  <FeaturedSetsPicker
+                    messageId={msg.id}
+                    sets={featuredSets}
+                    selectedSetIds={featuredMemberships[msg.id] ?? []}
+                  />
+                </div>
+              </details>
+            ) : (
+              <div className="message-card__quick-feature">
+                <label>
+                  Add to featured set on approve (optional)
+                  <select
+                    value={approveAddSet[msg.id] ?? ""}
+                    onChange={(e) =>
+                      setApproveAddSet((prev) => ({
+                        ...prev,
+                        [msg.id]: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">—</option>
+                    {featuredSets.map((set) => (
+                      <option key={set.id} value={set.id}>
+                        {set.title ?? set.slug}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+
+            <div className="message-card__actions">
+              <button
+                type="button"
+                disabled={isLoading || msg.moderation_status !== "pending"}
+                onClick={() => approveAndMaybeFeature(msg.id)}
+                data-action="approve"
+              >
+                Approve
+              </button>
+              <button
+                type="button"
+                disabled={isLoading || msg.moderation_status === "denied"}
+                onClick={() => moderate("deny", msg.id)}
+                data-action="deny"
+              >
+                Deny
+              </button>
+            </div>
+
+            {row.status === "error" && <p className="error">{row.error}</p>}
+          </article>
+        );
+      })}
+    </div>
   );
 }

@@ -1,2 +1,9 @@
 export { createDb, type Db } from "./client.js";
-export type { Message, IngestionEvent, ModerationAction } from "./types.js";
+export type {
+  Message,
+  IngestionEvent,
+  ModerationAction,
+  FeaturedSet,
+  FeaturedSetMessage,
+  AdminUser,
+} from "./types.js";

@@ -1,10 +1,17 @@
 import type { RawRequest, ParseResult, ParseSource } from "./types.js";
+import { MESSAGE_MAX_LENGTH } from "./config.js";
 
 const HEADER_KEYS = ["x-message", "x-secret", "x-prompt"] as const;
 const BODY_FIELD_KEYS = ["message", "secret", "prompt"] as const;
 const QUERY_KEYS = ["message", "secret"] as const;
 
 function success(message: string, source: ParseSource): ParseResult {
+  const max = Number.isFinite(MESSAGE_MAX_LENGTH) ? MESSAGE_MAX_LENGTH : 512;
+
+  if (max > 0 && message.length > max) {
+    return { message: null, status: "too_long", source };
+  }
+
   return { message, status: "success", source };
 }
 
@@ -80,7 +87,17 @@ function fromPath(path: string): ParseResult | null {
   const raw = path.slice(idx + prefix.length);
   if (!raw) return null;
 
-  const decoded = nonEmpty(decodeURIComponent(raw));
+  // People often paste URL-encoded text; also treat '+' as space for readability.
+  const normalized = raw.replace(/\+/g, " ");
+  let decodedRaw: string;
+  try {
+    decodedRaw = decodeURIComponent(normalized);
+  } catch {
+    // If decoding fails, fall back to normalized raw.
+    decodedRaw = normalized;
+  }
+
+  const decoded = nonEmpty(decodedRaw);
   if (decoded) return success(decoded, "path");
   return null;
 }

@@ -33,6 +33,7 @@ function makeFakeDb(resultData: unknown[] = [], countResult: number = 0) {
     const chainMethods = [
       "select",
       "eq",
+      "not",
       "ilike",
       "gt",
       "lt",
@@ -87,6 +88,7 @@ function makeSingleDb(
     const chainMethods = [
       "select",
       "eq",
+      "not",
       "ilike",
       "gt",
       "lt",

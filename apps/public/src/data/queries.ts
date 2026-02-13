@@ -4,6 +4,11 @@ import { getDb } from "@/lib/db";
 
 const PUBLIC_REVALIDATE_SECONDS = 600;
 
+export type FeaturedSetWithMessages = {
+  set: { id: string; slug: string; title: string | null };
+  messages: Message[];
+};
+
 async function _getApprovedMessages(
   db: Db,
   opts: { limit?: number; offset?: number },
@@ -15,6 +20,7 @@ async function _getApprovedMessages(
     .from("messages")
     .select("*")
     .eq("moderation_status", "approved")
+    .not("short_id", "is", null)
     .order("approved_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -23,7 +29,8 @@ async function _getApprovedMessages(
   const { count, error: countError } = await db
     .from("messages")
     .select("*", { count: "exact", head: true })
-    .eq("moderation_status", "approved");
+    .eq("moderation_status", "approved")
+    .not("short_id", "is", null);
 
   if (countError) throw countError;
 
@@ -38,6 +45,23 @@ async function _getApprovedMessageById(
     .from("messages")
     .select("*")
     .eq("id", id)
+    .eq("moderation_status", "approved")
+    .single();
+
+  if (error && error.code === "PGRST116") return null;
+  if (error) throw error;
+
+  return data as Message;
+}
+
+async function _getApprovedMessageByShortId(
+  db: Db,
+  shortId: string,
+): Promise<Message | null> {
+  const { data, error } = await db
+    .from("messages")
+    .select("*")
+    .eq("short_id", shortId)
     .eq("moderation_status", "approved")
     .single();
 
@@ -84,5 +108,49 @@ export const getApprovedMessageByIdCached = unstable_cache(
     return _getApprovedMessageById(getDb(), id);
   },
   ["public:getApprovedMessageById"],
+  { revalidate: PUBLIC_REVALIDATE_SECONDS },
+);
+
+export const getApprovedMessageByShortIdCached = unstable_cache(
+  async (shortId: string) => {
+    return _getApprovedMessageByShortId(getDb(), shortId);
+  },
+  ["public:getApprovedMessageByShortId"],
+  { revalidate: PUBLIC_REVALIDATE_SECONDS },
+);
+
+async function _getCurrentFeaturedSetWithMessages(
+  db: Db,
+): Promise<FeaturedSetWithMessages | null> {
+  const { data: set, error } = await db
+    .from("featured_sets")
+    .select("id, slug, title")
+    .eq("pinned", true)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!set) return null;
+
+  const { data: rows, error: rowsError } = await db
+    .from("featured_set_messages")
+    .select("position, message:messages(*)")
+    .eq("set_id", set.id)
+    .order("position", { ascending: true });
+
+  if (rowsError) throw rowsError;
+
+  const messages = (rows ?? [])
+    .map((r) => (r as any).message as Message | null)
+    .filter((m): m is Message => m !== null && m.short_id !== null);
+
+  return { set, messages };
+}
+
+export const getCurrentFeaturedSetWithMessagesCached = unstable_cache(
+  async () => {
+    return _getCurrentFeaturedSetWithMessages(getDb());
+  },
+  ["public:getCurrentFeaturedSetWithMessages"],
   { revalidate: PUBLIC_REVALIDATE_SECONDS },
 );

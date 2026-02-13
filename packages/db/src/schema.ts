@@ -1,5 +1,7 @@
 import {
+  boolean,
   inet,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -12,6 +14,8 @@ export const parseStatusEnum = pgEnum("parse_status", [
   "success",
   "partial",
   "failed",
+  "too_long",
+  "denied_ip",
 ]);
 
 export const moderationStatusEnum = pgEnum("moderation_status", [
@@ -41,6 +45,7 @@ export const messages = pgTable("messages", {
     .notNull(),
   moderatedBy: text("moderated_by"),
   tags: text("tags").array(),
+  shortId: text("short_id"),
 });
 
 export const ingestionEvents = pgTable("ingestion_events", {
@@ -69,6 +74,42 @@ export const moderationActions = pgTable("moderation_actions", {
   action: moderationActionEnum("action").notNull(),
   actor: text("actor").notNull(),
   reason: text("reason"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const featuredSets = pgTable("featured_sets", {
+  id: uuid("id").primaryKey(),
+  slug: text("slug").notNull(),
+  title: text("title"),
+  pinned: boolean("pinned").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const featuredSetMessages = pgTable("featured_set_messages", {
+  id: uuid("id").primaryKey(),
+  setId: uuid("set_id")
+    .notNull()
+    .references(() => featuredSets.id),
+  messageId: uuid("message_id")
+    .notNull()
+    .references(() => messages.id),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const adminUsers = pgTable("admin_users", {
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull().unique(),
+  email: text("email"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
