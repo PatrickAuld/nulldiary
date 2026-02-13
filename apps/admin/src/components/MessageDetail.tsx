@@ -1,4 +1,10 @@
-import type { Message, IngestionEvent } from "@nulldiary/db";
+import type { IngestionEvent, Message } from "@nulldiary/db";
+
+function getPublicContent(message: Message): string {
+  const edited = message.edited_content;
+  if (edited && edited.trim().length > 0) return edited;
+  return message.content;
+}
 
 export function MessageDetail({
   message,
@@ -7,6 +13,8 @@ export function MessageDetail({
   message: Message;
   events: IngestionEvent[];
 }) {
+  const publicContent = getPublicContent(message);
+
   return (
     <div>
       <div className="detail-section">
@@ -29,15 +37,14 @@ export function MessageDetail({
             <strong>Moderated by:</strong> {message.moderated_by}
           </p>
         )}
-        <pre>{message.content}</pre>
 
-        {message.edited_content &&
-          message.edited_content !== message.content && (
-            <>
-              <h3 style={{ marginTop: "1rem" }}>Edited version</h3>
-              <pre>{message.edited_content}</pre>
-            </>
-          )}
+        <h3 style={{ marginTop: "1rem" }}>What will be shown</h3>
+        <pre>{publicContent}</pre>
+
+        <details style={{ marginTop: "0.75rem" }}>
+          <summary style={{ cursor: "pointer" }}>Original message</summary>
+          <pre style={{ marginTop: "0.5rem" }}>{message.content}</pre>
+        </details>
       </div>
 
       <div className="detail-section">
