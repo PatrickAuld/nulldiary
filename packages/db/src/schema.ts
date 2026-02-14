@@ -46,6 +46,8 @@ export const messages = pgTable("messages", {
   moderatedBy: text("moderated_by"),
   tags: text("tags").array(),
   shortId: text("short_id"),
+  normalizedContent: text("normalized_content"),
+  contentHash: text("content_hash"),
 });
 
 export const ingestionEvents = pgTable("ingestion_events", {

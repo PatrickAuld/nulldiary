@@ -1,5 +1,6 @@
 import type { Db } from "@nulldiary/db";
 import { uuidv7 } from "uuidv7";
+import { normalizeMessage, hashContent } from "./normalize.js";
 import { randomShortId } from "./short-id.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
@@ -13,6 +14,9 @@ export async function persistIngestion(
   if (parsed.status === "success") {
     messageId = uuidv7();
 
+    const normalized = normalizeMessage(parsed.message);
+    const contentHash = hashContent(normalized);
+
     // Generate a short, shareable ID for public URLs.
     // Retry a few times on the extremely unlikely chance of collision.
     let inserted = false;
@@ -20,6 +24,8 @@ export async function persistIngestion(
       const { error } = await db.from("messages").insert({
         id: messageId,
         content: parsed.message,
+        normalized_content: normalized,
+        content_hash: contentHash,
         metadata: {},
         moderation_status: "pending",
         short_id: randomShortId(),

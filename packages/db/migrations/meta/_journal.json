@@ -50,6 +50,13 @@
       "when": 1770941340000,
       "tag": "0006_ip_denylist",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1771012800000,
+      "tag": "0007_content_hash",
+      "breakpoints": true
     }
   ]
 }

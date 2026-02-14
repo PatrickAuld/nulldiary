@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { persistIngestion } from "./persistence.js";
+import { normalizeMessage, hashContent } from "./normalize.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
 const { mockUuidv7 } = vi.hoisted(() => ({
@@ -59,6 +60,8 @@ describe("persistIngestion", () => {
     expect(db.insertedRows[0].values).toMatchObject({
       id: "00000000-0000-0000-0000-000000000001",
       content: "hi",
+      normalized_content: normalizeMessage("hi"),
+      content_hash: hashContent(normalizeMessage("hi")),
       moderation_status: "pending",
     });
 

@@ -10,6 +10,8 @@ export interface Message {
   moderated_by: string | null;
   tags: string[] | null;
   short_id: string | null;
+  normalized_content: string | null;
+  content_hash: string | null;
 }
 
 export interface IngestionEvent {
