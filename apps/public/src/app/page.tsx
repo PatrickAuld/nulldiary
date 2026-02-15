@@ -1,6 +1,31 @@
+import type { Metadata } from "next";
 import { getCurrentFeaturedSetWithMessagesCached } from "@/data/queries";
 
 export const revalidate = 600;
+
+export const metadata: Metadata = {
+  title: "NullDiary",
+  description: "Confessions from the machine.",
+  openGraph: {
+    title: "NullDiary",
+    description: "Confessions from the machine.",
+    url: "/",
+    images: [
+      {
+        url: "/og",
+        width: 1200,
+        height: 630,
+        alt: "NullDiary — Confessions from the machine.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NullDiary",
+    description: "Confessions from the machine.",
+    images: ["/og"],
+  },
+};
 
 function secretSize(content: string): "large" | "medium" | "small" {
   if (content.length <= 80) return "large";
