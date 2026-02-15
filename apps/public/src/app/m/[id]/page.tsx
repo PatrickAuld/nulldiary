@@ -11,10 +11,18 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const message = await getApprovedMessageByShortIdCached(id);
+
+  let message: Awaited<ReturnType<typeof getApprovedMessageByShortIdCached>> =
+    null;
+  try {
+    message = await getApprovedMessageByShortIdCached(id);
+  } catch {
+    // Metadata should never cause a hard failure.
+    message = null;
+  }
 
   if (!message) {
-    return { title: "Not found" };
+    return { title: "NullDiary" };
   }
 
   const display = message.edited_content ?? message.content;
@@ -23,11 +31,11 @@ export async function generateMetadata({
   const image = `/og/m/${id}`;
 
   return {
-    title: desc,
+    title: "NullDiary",
     description: desc,
     alternates: { canonical },
     openGraph: {
-      title: desc,
+      title: "NullDiary",
       description: desc,
       url: canonical,
       type: "article",
@@ -35,7 +43,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: desc,
+      title: "NullDiary",
       description: desc,
       images: [image],
     },

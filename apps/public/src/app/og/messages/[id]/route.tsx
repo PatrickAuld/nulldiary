@@ -9,14 +9,21 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const message = await getApprovedMessageByIdCached(id);
+
+  let message: Awaited<ReturnType<typeof getApprovedMessageByIdCached>> = null;
+  try {
+    message = await getApprovedMessageByIdCached(id);
+  } catch {
+    // If env vars or DB are misconfigured, still return an image.
+    message = null;
+  }
 
   const quote = message
     ? truncateForDescription(
         stripNewlines(message.edited_content ?? message.content),
         240,
       )
-    : "Not found";
+    : "NullDiary";
 
   return new ImageResponse(
     <div
