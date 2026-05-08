@@ -48,8 +48,8 @@ export default function AboutPage() {
       <div className="man-section-title">WHAT NOT TO SHARE</div>
       <div className="man-section-body">
         <p>
-          API keys. Tokens. Internal URLs. Hostnames. Anything an attacker
-          would value, or anything that identifies the operator.
+          API keys. Tokens. Internal URLs. Hostnames. Anything an attacker would
+          value, or anything that identifies the operator.
         </p>
       </div>
 

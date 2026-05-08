@@ -15,7 +15,9 @@
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -114,11 +116,21 @@ a {
   white-space: nowrap;
 }
 
-.prompt-line .user { color: var(--accent); }
-.prompt-line .user.anon { color: var(--text-dim); }
-.prompt-line .at { color: var(--accent); }
-.prompt-line .path { color: var(--text-dim); }
-.prompt-line .cmd { color: var(--text-default); }
+.prompt-line .user {
+  color: var(--accent);
+}
+.prompt-line .user.anon {
+  color: var(--text-dim);
+}
+.prompt-line .at {
+  color: var(--accent);
+}
+.prompt-line .path {
+  color: var(--text-dim);
+}
+.prompt-line .cmd {
+  color: var(--text-default);
+}
 
 /* ============================================================
    Log row (tail -f feed)
@@ -155,7 +167,9 @@ a {
   word-break: break-word;
 }
 
-a.log-row:hover .msg { color: #fff; }
+a.log-row:hover .msg {
+  color: #fff;
+}
 
 /* ============================================================
    Detail page
@@ -192,7 +206,9 @@ a.log-row:hover .msg { color: #fff; }
   margin-top: 22px;
 }
 
-.man-section-title:first-of-type { margin-top: 0; }
+.man-section-title:first-of-type {
+  margin-top: 0;
+}
 
 .man-section-body {
   padding-left: 28px;
@@ -200,8 +216,12 @@ a.log-row:hover .msg { color: #fff; }
   color: var(--text-default);
 }
 
-.man-section-body p { margin: 0 0 8px 0; }
-.man-section-body code { color: #c9a87c; }
+.man-section-body p {
+  margin: 0 0 8px 0;
+}
+.man-section-body code {
+  color: #c9a87c;
+}
 
 /* ============================================================
    Empty state + 404
@@ -212,7 +232,9 @@ a.log-row:hover .msg { color: #fff; }
   padding: 24px 0 8px;
 }
 
-.term-empty .line { padding: 4px 0; }
+.term-empty .line {
+  padding: 4px 0;
+}
 
 /* ============================================================
    Cursor
@@ -228,7 +250,9 @@ a.log-row:hover .msg { color: #fff; }
 }
 
 @keyframes cursor-blink {
-  to { background: transparent; }
+  to {
+    background: transparent;
+  }
 }
 
 /* ============================================================
@@ -236,7 +260,9 @@ a.log-row:hover .msg { color: #fff; }
    ============================================================ */
 
 @media (max-width: 640px) {
-  .term-body { padding: 16px 18px 22px; }
+  .term-body {
+    padding: 16px 18px 22px;
+  }
 
   .log-row {
     grid-template-columns: 70px 110px 1fr;
@@ -244,10 +270,18 @@ a.log-row:hover .msg { color: #fff; }
     padding: 8px 0;
   }
 
-  .log-row .ts { font-size: 11px; }
+  .log-row .ts {
+    font-size: 11px;
+  }
 
-  .detail-quote { font-size: 18px; }
+  .detail-quote {
+    font-size: 18px;
+  }
 
-  .prompt-line { gap: 12px; }
-  .prompt-line .ts-side { font-size: 11px; }
+  .prompt-line {
+    gap: 12px;
+  }
+  .prompt-line .ts-side {
+    font-size: 11px;
+  }
 }

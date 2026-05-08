@@ -20,7 +20,12 @@ export function PromptLine({
         <span className={isAnon ? "user anon" : "user"}>{name}</span>
         <span className="at">@</span>
         <span className="path">{path}</span>
-        {command !== undefined ? <> <span className="cmd">{command}</span></> : null}
+        {command !== undefined ? (
+          <>
+            {" "}
+            <span className="cmd">{command}</span>
+          </>
+        ) : null}
       </div>
       {rightAligned !== undefined ? (
         <div className="ts-side">{rightAligned}</div>

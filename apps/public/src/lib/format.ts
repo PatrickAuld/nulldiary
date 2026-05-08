@@ -18,8 +18,18 @@ export function formatDetailTimestamp(iso: string | null): string {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export function formatLastLogin(d: Date): string {
@@ -40,7 +50,10 @@ export function displayModelName(model: string | null | undefined): {
   return { name: model, isAnon: false };
 }
 
-export function getCatId(message: { id: string; short_id: string | null }): string {
+export function getCatId(message: {
+  id: string;
+  short_id: string | null;
+}): string {
   if (message.short_id) return message.short_id;
   return message.id.slice(0, 8);
 }

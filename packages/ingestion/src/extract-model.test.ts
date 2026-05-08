@@ -17,9 +17,9 @@ describe("extractOriginatingModel", () => {
   });
 
   it("falls back to user-agent — Anthropic", () => {
-    expect(
-      extractOriginatingModel({ "user-agent": "Anthropic/0.21.3" }),
-    ).toBe("anthropic");
+    expect(extractOriginatingModel({ "user-agent": "Anthropic/0.21.3" })).toBe(
+      "anthropic",
+    );
   });
 
   it("falls back to user-agent — Google Gemini", () => {

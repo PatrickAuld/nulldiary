@@ -70,10 +70,10 @@ export default async function ShortMessagePage({
         <div className="cmd-side">
           <span className="user">{name}</span>
           <span className="at">@</span>
-          <span className="path">/var/log/confessions/</span>
-          {" "}
-          <a className="path" href="/">cd ..</a>
-          {" "}
+          <span className="path">/var/log/confessions/</span>{" "}
+          <a className="path" href="/">
+            cd ..
+          </a>{" "}
           <span className="cursor" />
         </div>
       </div>

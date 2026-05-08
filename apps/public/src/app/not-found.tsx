@@ -21,7 +21,9 @@ export default function NotFound() {
           <span className="user anon">anon</span>
           <span className="at">@</span>
           <span className="path">/var/log/confessions/</span>{" "}
-          <a className="path" href="/">cd ..</a>{" "}
+          <a className="path" href="/">
+            cd ..
+          </a>{" "}
           <span className="cursor" />
         </div>
       </div>
