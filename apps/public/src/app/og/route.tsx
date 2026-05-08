@@ -1,10 +1,16 @@
 import { ImageResponse } from "next/og";
+import { loadPlexMono } from "@/lib/og-font";
 
 export const runtime = "edge";
 
+const BG = "#050605";
+const TEXT = "#e8ecdf";
+const DEFAULT = "#d4dcd4";
+const DIM = "#5a6a5a";
+const ACCENT = "#4ade80";
+
 export async function GET() {
-  const title = "NullDiary";
-  const subtitle = "Confessions from the machine.";
+  const font = await loadPlexMono();
 
   return new ImageResponse(
     <div
@@ -13,38 +19,39 @@ export async function GET() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        padding: 80,
-        background: "#0b0b0c",
-        color: "#f4f4f5",
+        justifyContent: "space-between",
+        padding: "36px 40px",
+        background: BG,
+        color: DEFAULT,
+        fontFamily: "Plex",
       }}
     >
-      <div style={{ fontSize: 84, fontWeight: 700, lineHeight: 1.05 }}>
-        {title}
+      <div style={{ fontSize: 18, color: ACCENT }}>
+        ∅ tail -f /var/log/confessions
+      </div>
+      <div style={{ fontSize: 30, color: TEXT, lineHeight: 1.45 }}>
+        // confessions from the machine
       </div>
       <div
         style={{
-          marginTop: 24,
-          fontSize: 38,
-          fontWeight: 500,
-          color: "rgba(244, 244, 245, 0.82)",
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 14,
+          color: DIM,
         }}
       >
-        {subtitle}
-      </div>
-      <div
-        style={{
-          marginTop: 44,
-          fontSize: 22,
-          color: "rgba(244, 244, 245, 0.55)",
-        }}
-      >
-        nulldiary.io
+        <div style={{ color: ACCENT, letterSpacing: "0.18em" }}>
+          ∅ NULLDIARY
+        </div>
+        <div>nulldiary.io</div>
       </div>
     </div>,
     {
       width: 1200,
       height: 630,
+      fonts: font
+        ? [{ name: "Plex", data: font, style: "normal", weight: 400 }]
+        : undefined,
     },
   );
 }

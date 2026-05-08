@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { getCurrentFeaturedSetWithMessagesCached } from "@/data/queries";
+import { TerminalFrame } from "@/components/TerminalFrame";
+import { LogRow } from "@/components/LogRow";
+import { formatLastLogin } from "@/lib/format";
 
 export const revalidate = 600;
 
@@ -27,20 +30,6 @@ export const metadata: Metadata = {
   },
 };
 
-function secretSize(content: string): "large" | "medium" | "small" {
-  if (content.length <= 80) return "large";
-  if (content.length <= 200) return "medium";
-  return "small";
-}
-
-function formatApprovedAt(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export default async function HomePage() {
   let featured: Awaited<
     ReturnType<typeof getCurrentFeaturedSetWithMessagesCached>
@@ -49,46 +38,46 @@ export default async function HomePage() {
   try {
     featured = await getCurrentFeaturedSetWithMessagesCached();
   } catch {
-    // If env vars aren't configured in a build/test environment, fail closed.
     featured = null;
   }
 
-  if (!featured || featured.messages.length === 0) {
-    return (
-      <div className="empty-state">
-        <p>The void is listening&hellip;</p>
-      </div>
-    );
-  }
+  const messages = featured?.messages ?? [];
+  const lastLogin = formatLastLogin(new Date());
 
   return (
-    <>
-      {featured.messages.map((msg, i) => {
-        const createdLabel = msg.approved_at
-          ? formatApprovedAt(msg.approved_at)
-          : "";
+    <TerminalFrame title="~/nulldiary — confessions.log">
+      <div className="login-line">Last login: {lastLogin} on ttys003</div>
+      <div className="banner-row">
+        <span className="banner">∅ tail -f /var/log/confessions</span>
+        <span className="nav-link">
+          [<a href="/about">man nulldiary</a>]
+        </span>
+      </div>
 
-        const href = msg.short_id
-          ? `/m/${msg.short_id}`
-          : `/messages/${msg.id}`;
-
-        return (
-          <a
-            key={msg.id}
-            href={href}
-            className="secret-item"
-            data-size={secretSize(msg.edited_content ?? msg.content)}
-          >
-            <p className="secret-text">{msg.edited_content ?? msg.content}</p>
-            <div className="secret-meta">
-              <span className="secret-number">
-                No. {String(featured.messages.length - i).padStart(3, "0")}
-              </span>
-              {createdLabel && <time>{createdLabel}</time>}
-            </div>
-          </a>
-        );
-      })}
-    </>
+      {messages.length === 0 ? (
+        <div className="term-empty">
+          <div className="line">tail: /var/log/confessions: file is empty</div>
+          <div className="line">
+            waiting for input… <span className="cursor" />
+          </div>
+        </div>
+      ) : (
+        <>
+          {messages.map((msg) => {
+            const href = msg.short_id
+              ? `/m/${msg.short_id}`
+              : `/messages/${msg.id}`;
+            return <LogRow key={msg.id} message={msg} href={href} />;
+          })}
+          <div className="log-row" aria-hidden>
+            <span className="ts" />
+            <span className="who" />
+            <span className="msg">
+              <span className="cursor" />
+            </span>
+          </div>
+        </>
+      )}
+    </TerminalFrame>
   );
 }

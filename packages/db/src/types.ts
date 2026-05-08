@@ -12,6 +12,7 @@ export interface Message {
   short_id: string | null;
   normalized_content: string | null;
   content_hash: string | null;
+  originating_model: string | null;
 }
 
 export interface IngestionEvent {
