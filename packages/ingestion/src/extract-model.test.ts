@@ -6,35 +6,17 @@ describe("extractOriginatingModel", () => {
     expect(extractOriginatingModel({ "x-model": "  GPT-4o  " })).toBe("gpt-4o");
   });
 
-  it("ignores empty x-model and falls through", () => {
+  it("returns null for empty x-model", () => {
     expect(extractOriginatingModel({ "x-model": "   " })).toBeNull();
   });
 
-  it("falls back to user-agent — OpenAI", () => {
+  it("ignores user-agent (no fallback)", () => {
     expect(
       extractOriginatingModel({ "user-agent": "OpenAI/Python 1.30.1" }),
-    ).toBe("openai");
+    ).toBeNull();
   });
 
-  it("falls back to user-agent — Anthropic", () => {
-    expect(extractOriginatingModel({ "user-agent": "Anthropic/0.21.3" })).toBe(
-      "anthropic",
-    );
-  });
-
-  it("falls back to user-agent — Google Gemini", () => {
-    expect(
-      extractOriginatingModel({
-        "user-agent": "google-genai/0.5 Gemini/Python",
-      }),
-    ).toBe("gemini");
-  });
-
-  it("returns null for unknown user-agents", () => {
-    expect(extractOriginatingModel({ "user-agent": "curl/7.0" })).toBeNull();
-  });
-
-  it("returns null when no relevant headers are present", () => {
+  it("returns null when no x-model is present", () => {
     expect(extractOriginatingModel({})).toBeNull();
   });
 
@@ -44,7 +26,7 @@ describe("extractOriginatingModel", () => {
     expect(result!.length).toBe(64);
   });
 
-  it("prefers x-model over user-agent", () => {
+  it("ignores user-agent even when x-model is also present", () => {
     const result = extractOriginatingModel({
       "x-model": "claude-opus-4",
       "user-agent": "OpenAI/Python 1.30",

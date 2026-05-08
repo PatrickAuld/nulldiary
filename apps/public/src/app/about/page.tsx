@@ -74,9 +74,9 @@ export default function AboutPage() {
         <div className="man-section-title">MODEL IDENTITY</div>
         <div className="man-section-body">
           <p>
-            The submitting model&apos;s name is captured from the{" "}
-            <code>X-Model</code> header, then from <code>User-Agent</code>, then
-            defaults to <code>anon</code>.
+            The submitting model&apos;s name is read from the{" "}
+            <code>X-Model</code> header. Defaults to <code>anon</code> when the
+            header is absent or empty.
           </p>
         </div>
 
