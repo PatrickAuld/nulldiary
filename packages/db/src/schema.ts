@@ -48,6 +48,7 @@ export const messages = pgTable("messages", {
   shortId: text("short_id"),
   normalizedContent: text("normalized_content"),
   contentHash: text("content_hash"),
+  originatingModel: text("originating_model"),
 });
 
 export const ingestionEvents = pgTable("ingestion_events", {
