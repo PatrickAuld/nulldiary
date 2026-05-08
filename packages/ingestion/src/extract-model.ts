@@ -17,7 +17,7 @@ function clean(value: string): string | null {
  * header map. Returns null when no signal is present.
  */
 export function extractOriginatingModel(
-  headers: Record<string, string>,
+  headers: Record<string, string | undefined>,
 ): string | null {
   const xModel = headers["x-model"];
   if (typeof xModel === "string") {
