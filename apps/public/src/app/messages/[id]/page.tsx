@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getApprovedMessageByIdCached } from "@/data/queries";
 import { truncateForDescription } from "@/lib/og";
 import { TerminalFrame } from "@/components/TerminalFrame";
@@ -24,8 +24,12 @@ export async function generateMetadata({
 
   const display = message.edited_content ?? message.content;
   const desc = truncateForDescription(display, 220);
-  const canonical = `/messages/${id}`;
-  const image = `/og/messages/${id}`;
+  const canonical = message.short_id
+    ? `/m/${message.short_id}`
+    : `/messages/${id}`;
+  const image = message.short_id
+    ? `/og/m/${message.short_id}`
+    : `/og/messages/${id}`;
 
   return {
     title: desc,
@@ -55,6 +59,10 @@ export default async function MessagePage({
   const { id } = await params;
   const message = await getApprovedMessageByIdCached(id);
   if (!message) notFound();
+
+  if (message.short_id) {
+    redirect(`/m/${message.short_id}`);
+  }
 
   const catId = getCatId(message);
   const ts = formatDetailTimestamp(message.approved_at);
