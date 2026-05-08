@@ -11,7 +11,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@nulldiary/db": "workspace:*"
+    "@nulldiary/db": "workspace:*",
+    "uuidv7": "^1.0.1"
   },
   "devDependencies": {
     "typescript": "^5.9.0",

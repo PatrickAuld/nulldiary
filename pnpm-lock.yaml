@@ -68,6 +68,9 @@ importers:
       "@nulldiary/ingestion":
         specifier: workspace:*
         version: link:../../packages/ingestion
+      "@nulldiary/moderation":
+        specifier: workspace:*
+        version: link:../../packages/moderation
       next:
         specifier: ^15.5.0
         version: 15.5.11(react-dom@19.2.4)(react@19.2.4)
@@ -140,6 +143,9 @@ importers:
       "@nulldiary/db":
         specifier: workspace:*
         version: link:../db
+      uuidv7:
+        specifier: ^1.0.1
+        version: 1.1.0
     devDependencies:
       typescript:
         specifier: ^5.9.0
