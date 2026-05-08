@@ -140,4 +140,39 @@ describe("persistIngestion", () => {
       '{"message":"stored"}',
     );
   });
+
+  it("writes originating_model from x-model header on the messages insert", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw({
+      headers: { "x-model": "gpt-4o", "user-agent": "ignored" },
+    });
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed);
+
+    expect(db.insertedRows[0].table).toBe("messages");
+    expect(db.insertedRows[0].values).toMatchObject({
+      originating_model: "gpt-4o",
+    });
+  });
+
+  it("writes null originating_model when no signal is present", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw({ headers: {} });
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed);
+
+    expect(db.insertedRows[0].values).toMatchObject({
+      originating_model: null,
+    });
+  });
 });

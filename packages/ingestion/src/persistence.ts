@@ -2,6 +2,7 @@ import type { Db } from "@nulldiary/db";
 import { uuidv7 } from "uuidv7";
 import { normalizeMessage, hashContent } from "./normalize.js";
 import { randomShortId } from "./short-id.js";
+import { extractOriginatingModel } from "./extract-model.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
 export async function persistIngestion(
@@ -16,6 +17,8 @@ export async function persistIngestion(
 
     const normalized = normalizeMessage(parsed.message);
     const contentHash = hashContent(normalized);
+
+    const originatingModel = extractOriginatingModel(raw.headers);
 
     // Generate a short, shareable ID for public URLs.
     // Retry a few times on the extremely unlikely chance of collision.
@@ -35,6 +38,7 @@ export async function persistIngestion(
         metadata: {},
         moderation_status: "pending",
         short_id: shortId,
+        originating_model: originatingModel,
       });
 
       if (!error) {
