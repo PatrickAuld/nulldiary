@@ -4,10 +4,17 @@ import { normalizeMessage, hashContent } from "./normalize.js";
 import { randomShortId } from "./short-id.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
+export type AutoDecision = {
+  action: "denied";
+  reason: string;
+  actor: string;
+};
+
 export async function persistIngestion(
   db: Db,
   raw: RawRequest,
   parsed: ParseResult,
+  autoDecision?: AutoDecision,
 ): Promise<void> {
   let messageId: string | null = null;
 
@@ -24,6 +31,16 @@ export async function persistIngestion(
     // applied yet. In that case PostgREST returns PGRST204 (schema cache doesn't
     // include the column). We fall back to inserting without short_id so /s
     // doesn't 500.
+    const moderationStatus = autoDecision ? "denied" : "pending";
+    const deniedAt = autoDecision ? new Date().toISOString() : null;
+    const autoFields = autoDecision
+      ? {
+          auto_action: autoDecision.action,
+          auto_action_reason: autoDecision.reason,
+          denied_at: deniedAt,
+        }
+      : {};
+
     let inserted = false;
     for (let attempt = 0; attempt < 5; attempt++) {
       const shortId = randomShortId();
@@ -33,8 +50,9 @@ export async function persistIngestion(
         normalized_content: normalized,
         content_hash: contentHash,
         metadata: {},
-        moderation_status: "pending",
+        moderation_status: moderationStatus,
         short_id: shortId,
+        ...autoFields,
       });
 
       if (!error) {
@@ -50,7 +68,8 @@ export async function persistIngestion(
           normalized_content: normalized,
           content_hash: contentHash,
           metadata: {},
-          moderation_status: "pending",
+          moderation_status: moderationStatus,
+          ...autoFields,
         });
 
         if (fallbackError) throw fallbackError;
@@ -66,6 +85,17 @@ export async function persistIngestion(
 
     if (!inserted) {
       throw new Error("Failed to generate unique short_id for message");
+    }
+
+    if (autoDecision) {
+      const { error: auditError } = await db.from("moderation_actions").insert({
+        id: uuidv7(),
+        message_id: messageId,
+        action: autoDecision.action,
+        actor: autoDecision.actor,
+        reason: autoDecision.reason,
+      });
+      if (auditError) throw auditError;
     }
   }
 

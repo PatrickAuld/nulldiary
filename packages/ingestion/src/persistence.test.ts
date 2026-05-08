@@ -39,7 +39,8 @@ describe("persistIngestion", () => {
     mockUuidv7
       .mockReset()
       .mockReturnValueOnce("00000000-0000-0000-0000-000000000001")
-      .mockReturnValueOnce("00000000-0000-0000-0000-000000000002");
+      .mockReturnValueOnce("00000000-0000-0000-0000-000000000002")
+      .mockReturnValueOnce("00000000-0000-0000-0000-000000000003");
   });
 
   it("inserts message then ingestion_event on success parse", async () => {
@@ -123,6 +124,89 @@ describe("persistIngestion", () => {
       user_agent: "bot/1.0",
       body: null,
     });
+  });
+
+  it("inserts message as auto-denied when autoDecision is provided", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw();
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed, {
+      action: "denied",
+      reason: "dupe_of_denied",
+      actor: "system:auto-mod@v1",
+    });
+
+    const messageInsert = db.insertedRows.find((r) => r.table === "messages");
+    expect(messageInsert).toBeDefined();
+    const values = messageInsert!.values as Record<string, unknown>;
+    expect(values.moderation_status).toBe("denied");
+    expect(values.auto_action).toBe("denied");
+    expect(values.auto_action_reason).toBe("dupe_of_denied");
+    expect(values.denied_at).toBeDefined();
+    expect(typeof values.denied_at).toBe("string");
+  });
+
+  it("writes a moderation_actions audit row when autoDecision is provided", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw();
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed, {
+      action: "denied",
+      reason: "dupe_of_denied",
+      actor: "system:auto-mod@v1",
+    });
+
+    const auditRow = db.insertedRows.find(
+      (r) => r.table === "moderation_actions",
+    );
+    expect(auditRow).toBeDefined();
+    expect(auditRow!.values).toMatchObject({
+      message_id: "00000000-0000-0000-0000-000000000001",
+      action: "denied",
+      actor: "system:auto-mod@v1",
+      reason: "dupe_of_denied",
+    });
+
+    // Audit row must reference the message, so messages must be inserted first.
+    const messageIdx = db.insertedRows.findIndex((r) => r.table === "messages");
+    const auditIdx = db.insertedRows.findIndex(
+      (r) => r.table === "moderation_actions",
+    );
+    expect(messageIdx).toBeLessThan(auditIdx);
+  });
+
+  it("does not insert a message when autoDecision is provided but parse failed", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw({ body: null, contentType: null });
+    const parsed: ParseResult = {
+      message: null,
+      status: "failed",
+      source: null,
+    };
+
+    await persistIngestion(db as never, raw, parsed, {
+      action: "denied",
+      reason: "dupe_of_denied",
+      actor: "system:auto-mod@v1",
+    });
+
+    expect(db.insertedRows.find((r) => r.table === "messages")).toBeUndefined();
+    expect(
+      db.insertedRows.find((r) => r.table === "moderation_actions"),
+    ).toBeUndefined();
+    expect(
+      db.insertedRows.find((r) => r.table === "ingestion_events"),
+    ).toBeDefined();
   });
 
   it("stores body in ingestion event", async () => {

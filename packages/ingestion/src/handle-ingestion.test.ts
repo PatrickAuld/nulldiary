@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleIngestion } from "./handle-ingestion.js";
 
-const { mockPersistIngestion, mockCheckRateLimit } = vi.hoisted(() => ({
-  mockPersistIngestion: vi.fn().mockResolvedValue(undefined),
-  mockCheckRateLimit: vi.fn(),
-}));
+const { mockPersistIngestion, mockCheckRateLimit, mockFindDupe } = vi.hoisted(
+  () => ({
+    mockPersistIngestion: vi.fn().mockResolvedValue(undefined),
+    mockCheckRateLimit: vi.fn(),
+    mockFindDupe: vi.fn(),
+  }),
+);
 vi.mock("./persistence.js", () => ({
   persistIngestion: mockPersistIngestion,
 }));
 vi.mock("@nulldiary/moderation", () => ({
   checkRateLimit: mockCheckRateLimit,
+  findDupeByContentHash: mockFindDupe,
 }));
 
 vi.mock("uuidv7", () => ({ uuidv7: () => "mock-uuid" }));
@@ -29,6 +33,8 @@ describe("handleIngestion", () => {
       remaining: 99,
       resetAt: new Date(),
     });
+    mockFindDupe.mockReset();
+    mockFindDupe.mockResolvedValue(null);
   });
 
   it("returns 200 for GET /s/hello", async () => {
@@ -119,6 +125,63 @@ describe("handleIngestion", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
+  });
+
+  it("auto-denies on dupe of denied: passes autoDecision to persistIngestion and returns 200", async () => {
+    mockFindDupe.mockResolvedValueOnce({
+      status: "denied",
+      messageId: "prior-msg",
+    });
+
+    const res = await handleIngestion(req("/s/some-msg"), fakeDb);
+
+    expect(res.status).toBe(200);
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+    const [, , parsed, autoDecision] = mockPersistIngestion.mock.calls[0];
+    expect(parsed).toMatchObject({ status: "success", message: "some-msg" });
+    expect(autoDecision).toEqual({
+      action: "denied",
+      reason: "dupe_of_denied",
+      actor: "system:auto-mod@v1",
+    });
+  });
+
+  it("does not pass autoDecision when no dupe is found", async () => {
+    mockFindDupe.mockResolvedValueOnce(null);
+
+    await handleIngestion(req("/s/fresh-msg"), fakeDb);
+
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+    const [, , , autoDecision] = mockPersistIngestion.mock.calls[0];
+    expect(autoDecision).toBeUndefined();
+  });
+
+  it("fails open when the dupe lookup throws: still persists, no autoDecision", async () => {
+    mockFindDupe.mockRejectedValueOnce(new Error("supabase exploded"));
+
+    const res = await handleIngestion(req("/s/lookup-failed"), fakeDb);
+
+    expect(res.status).toBe(200);
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+    const [, , parsed, autoDecision] = mockPersistIngestion.mock.calls[0];
+    expect(parsed).toMatchObject({
+      status: "success",
+      message: "lookup-failed",
+    });
+    expect(autoDecision).toBeUndefined();
+  });
+
+  it("does not pass autoDecision when dupe is pending (cluster work is later)", async () => {
+    mockFindDupe.mockResolvedValueOnce({
+      status: "pending",
+      messageId: "prior-msg",
+    });
+
+    await handleIngestion(req("/s/dupe-of-pending"), fakeDb);
+
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+    const [, , , autoDecision] = mockPersistIngestion.mock.calls[0];
+    expect(autoDecision).toBeUndefined();
   });
 
   it("returns 429 and writes a rate_limited ingestion event with no message row", async () => {

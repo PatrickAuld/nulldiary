@@ -1,8 +1,9 @@
 import type { Db } from "@nulldiary/db";
-import { checkRateLimit } from "@nulldiary/moderation";
+import { checkRateLimit, findDupeByContentHash } from "@nulldiary/moderation";
 import { extractRequest } from "./extract-request.js";
+import { normalizeMessage, hashContent } from "./normalize.js";
 import { parseMessage } from "./parse-message.js";
-import { persistIngestion } from "./persistence.js";
+import { persistIngestion, type AutoDecision } from "./persistence.js";
 
 function getClientIp(headers: Record<string, string>): string | null {
   const forwarded = headers["x-forwarded-for"];
@@ -77,7 +78,29 @@ export async function handleIngestion(
   }
 
   const parsed = parseMessage(raw);
-  await persistIngestion(db, raw, parsed);
+
+  let autoDecision: AutoDecision | undefined;
+  if (parsed.status === "success") {
+    // Fail-open on lookup failure: a flaky dupe query must not block ingestion
+    // or cause spurious denials. Worst case the message lands in the human
+    // queue, which is already the default.
+    try {
+      const contentHash = hashContent(normalizeMessage(parsed.message));
+      const dupe = await findDupeByContentHash(db, contentHash);
+      if (dupe?.status === "denied") {
+        autoDecision = {
+          action: "denied",
+          reason: "dupe_of_denied",
+          actor: "system:auto-mod@v1",
+        };
+      }
+      // TODO(A4): cluster attachment for pending/approved dupes.
+    } catch {
+      // Swallow — see comment above.
+    }
+  }
+
+  await persistIngestion(db, raw, parsed, autoDecision);
 
   if (parsed.status === "too_long") {
     return Response.json(
