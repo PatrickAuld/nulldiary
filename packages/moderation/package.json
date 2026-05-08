@@ -1,5 +1,5 @@
 {
-  "name": "@nulldiary/ingestion",
+  "name": "@nulldiary/moderation",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,9 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@nulldiary/db": "workspace:*",
-    "@nulldiary/moderation": "workspace:*",
-    "uuidv7": "^1.0.1"
+    "@nulldiary/db": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.0",

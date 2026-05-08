@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleIngestion } from "./handle-ingestion.js";
 
-const { mockPersistIngestion } = vi.hoisted(() => ({
+const { mockPersistIngestion, mockCheckRateLimit } = vi.hoisted(() => ({
   mockPersistIngestion: vi.fn().mockResolvedValue(undefined),
+  mockCheckRateLimit: vi.fn(),
 }));
 vi.mock("./persistence.js", () => ({
   persistIngestion: mockPersistIngestion,
+}));
+vi.mock("@nulldiary/moderation", () => ({
+  checkRateLimit: mockCheckRateLimit,
 }));
 
 vi.mock("uuidv7", () => ({ uuidv7: () => "mock-uuid" }));
@@ -19,6 +23,12 @@ function req(path: string, init?: RequestInit): Request {
 describe("handleIngestion", () => {
   beforeEach(() => {
     mockPersistIngestion.mockClear();
+    mockCheckRateLimit.mockReset();
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      remaining: 99,
+      resetAt: new Date(),
+    });
   });
 
   it("returns 200 for GET /s/hello", async () => {
@@ -109,5 +119,33 @@ describe("handleIngestion", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
+  });
+
+  it("returns 429 and writes a rate_limited ingestion event with no message row", async () => {
+    mockCheckRateLimit.mockResolvedValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetAt: new Date(),
+    });
+    const dbWithRpc = {
+      rpc: vi.fn().mockResolvedValue({ data: false, error: null }),
+    } as never;
+
+    const res = await handleIngestion(
+      req("/s/over-limit", {
+        headers: { "x-forwarded-for": "1.2.3.4" },
+      }),
+      dbWithRpc,
+    );
+
+    expect(res.status).toBe(429);
+
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+    const [, , parsed] = mockPersistIngestion.mock.calls[0];
+    expect(parsed).toEqual({
+      message: null,
+      status: "rate_limited",
+      source: null,
+    });
   });
 });

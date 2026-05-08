@@ -5,6 +5,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
   uuid,
@@ -16,6 +17,7 @@ export const parseStatusEnum = pgEnum("parse_status", [
   "failed",
   "too_long",
   "denied_ip",
+  "rate_limited",
 ]);
 
 export const moderationStatusEnum = pgEnum("moderation_status", [
@@ -48,6 +50,11 @@ export const messages = pgTable("messages", {
   shortId: text("short_id"),
   normalizedContent: text("normalized_content"),
   contentHash: text("content_hash"),
+  riskScore: real("risk_score"),
+  riskLabels: jsonb("risk_labels").$type<Record<string, unknown>>(),
+  autoAction: text("auto_action"),
+  autoActionReason: text("auto_action_reason"),
+  scoredAt: timestamp("scored_at", { withTimezone: true }),
 });
 
 export const ingestionEvents = pgTable("ingestion_events", {
@@ -106,6 +113,12 @@ export const featuredSetMessages = pgTable("featured_set_messages", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+export const ingestionRateBuckets = pgTable("ingestion_rate_buckets", {
+  sourceIp: inet("source_ip").notNull(),
+  bucketAt: timestamp("bucket_at", { withTimezone: true }).notNull(),
+  count: integer("count").notNull().default(0),
 });
 
 export const adminUsers = pgTable("admin_users", {

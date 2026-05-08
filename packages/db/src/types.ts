@@ -12,6 +12,11 @@ export interface Message {
   short_id: string | null;
   normalized_content: string | null;
   content_hash: string | null;
+  risk_score: number | null;
+  risk_labels: Record<string, unknown> | null;
+  auto_action: "denied" | "cleared" | "flagged" | null;
+  auto_action_reason: string | null;
+  scored_at: string | null;
 }
 
 export interface IngestionEvent {
@@ -26,7 +31,13 @@ export interface IngestionEvent {
   user_agent: string | null;
   raw_payload: Record<string, unknown> | null;
   parsed_message: string | null;
-  parse_status: "success" | "partial" | "failed";
+  parse_status:
+    | "success"
+    | "partial"
+    | "failed"
+    | "too_long"
+    | "denied_ip"
+    | "rate_limited";
   message_id: string | null;
 }
 

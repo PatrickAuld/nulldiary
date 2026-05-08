@@ -1,4 +1,5 @@
 import type { Db } from "@nulldiary/db";
+import { checkRateLimit } from "@nulldiary/moderation";
 import { extractRequest } from "./extract-request.js";
 import { parseMessage } from "./parse-message.js";
 import { persistIngestion } from "./persistence.js";
@@ -51,6 +52,28 @@ export async function handleIngestion(
         },
       },
     );
+  }
+
+  if (ip) {
+    const rate = await checkRateLimit({ ip, db });
+    if (!rate.allowed) {
+      const parsed = {
+        message: null,
+        status: "rate_limited",
+        source: null,
+      } as const;
+      await persistIngestion(db, raw, parsed);
+
+      return Response.json(
+        { error: "rate_limited" },
+        {
+          status: 429,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
   }
 
   const parsed = parseMessage(raw);

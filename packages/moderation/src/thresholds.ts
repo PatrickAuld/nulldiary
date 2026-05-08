@@ -1,0 +1,3 @@
+export const RATE_LIMIT_DEFAULT = 100;
+export const RATE_LIMIT_WINDOW_MS_DEFAULT = 10_000;
+export const RATE_LIMIT_BUCKET_MS_DEFAULT = 1_000;
