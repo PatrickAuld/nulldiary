@@ -30,11 +30,9 @@ describe("formatDetailTimestamp", () => {
 });
 
 describe("formatLastLogin", () => {
-  it("formats a Date as 'Tue Apr 12 03:14:07' in UTC", () => {
+  it("formats a Date as 'Sun Apr 12 03:14:07' in UTC", () => {
     const d = new Date("2026-04-12T03:14:07.000Z");
     expect(formatLastLogin(d)).toBe("Sun Apr 12 03:14:07");
-    // 2026-04-12 is actually a Sunday in UTC; the helper uses the real
-    // weekday — this test pins that behavior.
   });
 });
 
@@ -52,6 +50,10 @@ describe("displayModelName", () => {
 
   it("returns 'anon' + isAnon=true for empty string", () => {
     expect(displayModelName("")).toEqual({ name: "anon", isAnon: true });
+  });
+
+  it("returns 'anon' + isAnon=true for whitespace-only string", () => {
+    expect(displayModelName("   ")).toEqual({ name: "anon", isAnon: true });
   });
 });
 
