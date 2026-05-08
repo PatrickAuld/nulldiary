@@ -1,24 +1,21 @@
 /* ============================================================
-   Nulldiary — "The Confessional"
-   Dark, intimate, typographic. Secrets from the void.
+   Nulldiary — Terminal
+   Mono, dark, phosphor green. The page is a tail -f session.
    ============================================================ */
 
 :root {
-  --bg: #0c0a09;
-  --bg-elevated: #141210;
-  --text: #e8e0d4;
-  --text-muted: #7a7268;
-  --text-faint: #4a4540;
-  --accent: #c9a87c;
-  --accent-dim: #8b7355;
-  --rule: #1e1c1a;
-  --font-serif: "Cormorant Garamond", "Garamond", "Georgia", serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+  --bg: #050605;
+  --chrome-bg: #1a1a1a;
+  --chrome-border: #2a2a2a;
+  --text: #e8ecdf;
+  --text-default: #d4dcd4;
+  --text-dim: #5a6a5a;
+  --accent: #4ade80;
+  --rule: #131613;
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
 }
 
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -32,24 +29,11 @@ html {
 
 body {
   font-family: var(--font-mono);
-  line-height: 1.6;
-  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-default);
   background: var(--bg);
   min-height: 100vh;
-  position: relative;
-}
-
-/* Subtle noise texture overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-  pointer-events: none;
-  z-index: 9999;
 }
 
 a {
@@ -58,295 +42,193 @@ a {
 }
 
 /* ============================================================
-   Page Shell
+   Terminal frame
    ============================================================ */
 
-.page-shell {
-  max-width: 52rem;
+.term-frame {
+  max-width: 56rem;
   margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 
-/* ============================================================
-   Site Header
-   ============================================================ */
-
-.site-header {
-  padding: 3rem 0 2rem;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 3rem;
-}
-
-.site-title {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 400;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.site-title a:hover {
-  color: var(--accent);
-}
-
-.site-tagline {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
-  font-style: italic;
-  font-weight: 300;
-  color: var(--text-faint);
-  margin-top: 0.5rem;
-}
-
-.site-nav {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.site-nav a {
-  color: var(--text-faint);
-  transition: color 0.2s ease;
-}
-
-.site-nav a:hover {
-  color: var(--accent);
-}
-
-/* ============================================================
-   Secrets Feed (Homepage)
-   ============================================================ */
-
-.secrets-feed {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.secret-item {
-  padding: 2.5rem 0;
-  border-bottom: 1px solid var(--rule);
-  display: block;
-  transition: border-color 0.3s ease;
-}
-
-.secret-item:first-child {
-  padding-top: 0;
-}
-
-.secret-item:hover {
-  border-bottom-color: var(--accent-dim);
-}
-
-.secret-item:hover .secret-text {
-  color: #f0e8dc;
-}
-
-.secret-text {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 300;
-  line-height: 1.5;
-  color: var(--text);
-  white-space: pre-wrap;
-  word-break: break-word;
-  transition: color 0.3s ease;
-}
-
-/* Vary size based on content length via data attribute */
-.secret-item[data-size="large"] .secret-text {
-  font-size: 2rem;
-}
-
-.secret-item[data-size="medium"] .secret-text {
-  font-size: 1.5rem;
-}
-
-.secret-item[data-size="small"] .secret-text {
-  font-size: 1.1875rem;
-}
-
-.secret-meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.secret-meta time {
-  color: var(--text-faint);
-}
-
-.secret-meta .secret-number {
-  color: var(--accent-dim);
-}
-
-/* ============================================================
-   Empty State
-   ============================================================ */
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40vh;
-}
-
-.empty-state p {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.5rem;
-  color: var(--text-faint);
-}
-
-/* ============================================================
-   Pagination
-   ============================================================ */
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-  padding: 3rem 0;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.pagination a {
-  color: var(--accent-dim);
-  transition: color 0.2s ease;
-}
-
-.pagination a:hover {
-  color: var(--accent);
-}
-
-/* ============================================================
-   Secret Detail Page
-   ============================================================ */
-
-.detail-back {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 4rem;
-  display: inline-block;
-  transition: color 0.2s ease;
-}
-
-.detail-back:hover {
-  color: var(--accent);
-}
-
-.detail-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-bottom: 6rem;
-}
-
-.detail-text {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 300;
-  font-size: 2.5rem;
-  line-height: 1.4;
-  color: var(--text);
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-width: 44rem;
-}
-
-.detail-text::before {
-  content: "\201C";
-  display: block;
-  font-size: 5rem;
-  line-height: 1;
-  color: var(--accent-dim);
-  margin-bottom: 0.5rem;
-  font-style: normal;
-}
-
-.detail-meta {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--rule);
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-/* ============================================================
-   Content Pages (About, Archive)
-   ============================================================ */
-
-.page-content {
-  flex: 1;
-}
-
-.page-heading {
-  font-family: var(--font-serif);
-  font-size: 1.75rem;
-  font-weight: 300;
-  font-style: italic;
-  color: var(--text);
-  margin-bottom: 1rem;
-}
-
-.page-description {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  line-height: 1.8;
-  color: var(--text-muted);
-  margin-bottom: 2rem;
-}
-
-.page-description a {
-  color: var(--accent-dim);
-  transition: color 0.2s ease;
-}
-
-.page-description a:hover {
-  color: var(--accent);
-}
-
-/* ============================================================
-   Site Footer
-   ============================================================ */
-
-.site-footer {
-  padding: 2rem 0;
-  margin-top: auto;
-  border-top: 1px solid var(--rule);
-  font-family: var(--font-mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-faint);
+.term-chrome {
+  background: var(--chrome-bg);
+  border-bottom: 1px solid var(--chrome-border);
+  padding: 8px 14px;
   text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #999;
+}
+
+.term-body {
+  padding: 22px 26px 28px;
+}
+
+/* ============================================================
+   Login + banner
+   ============================================================ */
+
+.login-line {
+  color: var(--text-dim);
+}
+
+.banner-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 6px 0 24px;
+}
+
+.banner-row .banner {
+  color: var(--accent);
+}
+
+.banner-row .nav-link {
+  color: var(--text-dim);
+  transition: color 0.15s ease;
+}
+
+.banner-row .nav-link:hover {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Prompt line
+   ============================================================ */
+
+.prompt-line {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 4px 0 18px;
+}
+
+.prompt-line .cmd-side {
+  flex: 1;
+  min-width: 0;
+}
+
+.prompt-line .ts-side {
+  color: var(--text-dim);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.prompt-line .user { color: var(--accent); }
+.prompt-line .user.anon { color: var(--text-dim); }
+.prompt-line .at { color: var(--accent); }
+.prompt-line .path { color: var(--text-dim); }
+.prompt-line .cmd { color: var(--text-default); }
+
+/* ============================================================
+   Log row (tail -f feed)
+   ============================================================ */
+
+.log-row {
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 92px 150px 1fr;
+  gap: 18px;
+  align-items: baseline;
+  transition: filter 0.15s ease;
+}
+
+.log-row .ts {
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+.log-row .who {
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-row .who.anon {
+  color: var(--text-dim);
+}
+
+.log-row .msg {
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+a.log-row:hover .msg { color: #fff; }
+
+/* ============================================================
+   Detail page
+   ============================================================ */
+
+.detail-quote {
+  color: var(--text);
+  line-height: 1.45;
+  padding: 0 0 28px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 22px;
+}
+
+/* ============================================================
+   Manpage (about page)
+   ============================================================ */
+
+.man-header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-default);
+  font-weight: 600;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+  letter-spacing: 0.06em;
+}
+
+.man-section-title {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-top: 22px;
+}
+
+.man-section-title:first-of-type { margin-top: 0; }
+
+.man-section-body {
+  padding-left: 28px;
+  padding-top: 8px;
+  color: var(--text-default);
+}
+
+.man-section-body p { margin: 0 0 8px 0; }
+.man-section-body code { color: #c9a87c; }
+
+/* ============================================================
+   Empty state + 404
+   ============================================================ */
+
+.term-empty {
+  color: var(--text-dim);
+  padding: 24px 0 8px;
+}
+
+.term-empty .line { padding: 4px 0; }
+
+/* ============================================================
+   Cursor
+   ============================================================ */
+
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 14px;
+  background: var(--accent);
+  vertical-align: text-top;
+  animation: cursor-blink 1s steps(2, start) infinite;
+}
+
+@keyframes cursor-blink {
+  to { background: transparent; }
 }
 
 /* ============================================================
@@ -354,90 +236,18 @@ a {
    ============================================================ */
 
 @media (max-width: 640px) {
-  .site-header {
-    padding: 2rem 0 1.5rem;
-    margin-bottom: 2rem;
+  .term-body { padding: 16px 18px 22px; }
+
+  .log-row {
+    grid-template-columns: 70px 110px 1fr;
+    gap: 12px;
+    padding: 8px 0;
   }
 
-  .secret-item {
-    padding: 1.75rem 0;
-  }
+  .log-row .ts { font-size: 11px; }
 
-  .secret-item[data-size="large"] .secret-text {
-    font-size: 1.5rem;
-  }
+  .detail-quote { font-size: 18px; }
 
-  .secret-item[data-size="medium"] .secret-text {
-    font-size: 1.25rem;
-  }
-
-  .secret-item[data-size="small"] .secret-text {
-    font-size: 1.0625rem;
-  }
-
-  .detail-text {
-    font-size: 1.75rem;
-  }
-
-  .detail-text::before {
-    font-size: 3.5rem;
-  }
-}
-
-/* ============================================================
-   Animations
-   ============================================================ */
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.secret-item {
-  animation: fade-up 0.6s ease both;
-}
-
-.secret-item:nth-child(1) {
-  animation-delay: 0ms;
-}
-.secret-item:nth-child(2) {
-  animation-delay: 60ms;
-}
-.secret-item:nth-child(3) {
-  animation-delay: 120ms;
-}
-.secret-item:nth-child(4) {
-  animation-delay: 180ms;
-}
-.secret-item:nth-child(5) {
-  animation-delay: 240ms;
-}
-.secret-item:nth-child(6) {
-  animation-delay: 300ms;
-}
-.secret-item:nth-child(7) {
-  animation-delay: 360ms;
-}
-.secret-item:nth-child(8) {
-  animation-delay: 420ms;
-}
-.secret-item:nth-child(9) {
-  animation-delay: 480ms;
-}
-.secret-item:nth-child(10) {
-  animation-delay: 540ms;
-}
-
-.detail-content {
-  animation: fade-up 0.8s ease both;
-}
-
-.page-content {
-  animation: fade-up 0.6s ease both;
+  .prompt-line { gap: 12px; }
+  .prompt-line .ts-side { font-size: 11px; }
 }
