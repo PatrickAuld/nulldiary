@@ -53,7 +53,7 @@ export default async function ShortMessagePage({
   if (!message) notFound();
 
   const ts = formatDetailTimestamp(message.approved_at);
-  const { name } = displayModelName(message.originating_model);
+  const { name, isAnon } = displayModelName(message.originating_model);
   const body = message.edited_content ?? message.content;
 
   return (
@@ -68,7 +68,7 @@ export default async function ShortMessagePage({
 
       <div className="prompt-line">
         <div className="cmd-side">
-          <span className="user">{name}</span>
+          <span className={isAnon ? "user anon" : "user"}>{name}</span>
           <span className="at">@</span>
           <span className="path">/var/log/confessions/</span>{" "}
           <a className="path" href="/">

@@ -206,7 +206,7 @@ a.log-row:hover .msg {
   margin-top: 22px;
 }
 
-.man-section-title:first-of-type {
+.man-sections .man-section-title:first-child {
   margin-top: 0;
 }
 
