@@ -190,6 +190,21 @@ export function MessageList({
               >
                 {msg.moderation_status}
               </span>
+              {msg.auto_action ? (
+                <span
+                  className="status-badge"
+                  data-status={`auto-${msg.auto_action}`}
+                  title={msg.auto_action_reason ?? undefined}
+                >
+                  auto:{msg.auto_action}
+                  {msg.auto_action_reason ? ` (${msg.auto_action_reason})` : ""}
+                </span>
+              ) : null}
+              {typeof msg.risk_score === "number" ? (
+                <span className="message-card__risk">
+                  risk {msg.risk_score.toFixed(2)}
+                </span>
+              ) : null}
               <span className="message-card__created">
                 {new Date(msg.created_at).toLocaleString()}
               </span>
@@ -197,6 +212,15 @@ export function MessageList({
                 View
               </a>
             </header>
+            {msg.risk_labels && msg.risk_labels.length > 0 ? (
+              <div className="message-card__labels">
+                {msg.risk_labels.map((lbl) => (
+                  <span key={lbl.category} className="message-card__label">
+                    {lbl.category}·{lbl.score.toFixed(2)}
+                  </span>
+                ))}
+              </div>
+            ) : null}
 
             <div className="message-card__box">
               <div className="message-card__box-title">Original message</div>

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   listMessages,
+  listSystemDenied,
   getMessageById,
   getIngestionEventsByMessageId,
 } from "./queries.js";
@@ -61,6 +62,9 @@ function makeFakeDb(resultData: unknown[] = [], countResult: number = 0) {
       "ilike",
       "gt",
       "lt",
+      "gte",
+      "is",
+      "not",
       "order",
       "range",
       "single",
@@ -173,6 +177,89 @@ describe("listMessages", () => {
 
     const ltCalls = db.calls.filter((c) => c.method === "lt");
     expect(ltCalls.some((c) => c.args[0] === "created_at")).toBe(true);
+  });
+
+  it("applies autoAction='flagged' as an exact eq filter", async () => {
+    const db = makeFakeDb([], 0);
+
+    await listMessages(db as never, { autoAction: "flagged" });
+
+    const eqCalls = db.calls.filter((c) => c.method === "eq");
+    expect(
+      eqCalls.some(
+        (c) => c.args[0] === "auto_action" && c.args[1] === "flagged",
+      ),
+    ).toBe(true);
+  });
+
+  it("applies autoAction='any-auto' as not-is-null", async () => {
+    const db = makeFakeDb([], 0);
+
+    await listMessages(db as never, { autoAction: "any-auto" });
+
+    const notCalls = db.calls.filter((c) => c.method === "not");
+    expect(
+      notCalls.some(
+        (c) =>
+          c.args[0] === "auto_action" &&
+          c.args[1] === "is" &&
+          c.args[2] === null,
+      ),
+    ).toBe(true);
+  });
+
+  it("applies autoAction='human-only' as is-null", async () => {
+    const db = makeFakeDb([], 0);
+
+    await listMessages(db as never, { autoAction: "human-only" });
+
+    const isCalls = db.calls.filter((c) => c.method === "is");
+    expect(
+      isCalls.some((c) => c.args[0] === "auto_action" && c.args[1] === null),
+    ).toBe(true);
+  });
+
+  it("applies minRiskScore via gte", async () => {
+    const db = makeFakeDb([], 0);
+
+    await listMessages(db as never, { minRiskScore: 0.6 });
+
+    const gteCalls = db.calls.filter((c) => c.method === "gte");
+    expect(
+      gteCalls.some((c) => c.args[0] === "risk_score" && c.args[1] === 0.6),
+    ).toBe(true);
+  });
+});
+
+describe("listSystemDenied", () => {
+  it("filters by auto_action='denied' and the system actor", async () => {
+    const db = makeFakeDb([makeMessage()], 1);
+
+    const result = await listSystemDenied(db as never, {});
+
+    const eqCalls = db.calls.filter((c) => c.method === "eq");
+    expect(
+      eqCalls.some(
+        (c) => c.args[0] === "auto_action" && c.args[1] === "denied",
+      ),
+    ).toBe(true);
+    expect(
+      eqCalls.some(
+        (c) =>
+          c.args[0] === "moderated_by" && c.args[1] === "system:auto-mod@v1",
+      ),
+    ).toBe(true);
+    expect(result.messages).toHaveLength(1);
+    expect(result.total).toBe(1);
+  });
+
+  it("respects pagination", async () => {
+    const db = makeFakeDb([], 0);
+
+    await listSystemDenied(db as never, { limit: 10, offset: 20 });
+
+    const rangeCall = db.calls.find((c) => c.method === "range");
+    expect(rangeCall?.args).toEqual([20, 29]);
   });
 });
 

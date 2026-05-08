@@ -119,6 +119,40 @@ describe("POST /api/moderation/approve", () => {
     expect(body.error).toBe("Message not found");
   });
 
+  it("forwards override=true to approveMessage", async () => {
+    mockApproveMessage.mockResolvedValue({ ok: true });
+
+    const req = new Request("http://localhost/api/moderation/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId: "msg-9", override: true }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(mockApproveMessage).toHaveBeenCalledWith("fake-db", {
+      messageId: "msg-9",
+      actor: "admin@test.com",
+      reason: undefined,
+      editedContent: undefined,
+      override: true,
+    });
+  });
+
+  it("does not forward override when omitted", async () => {
+    mockApproveMessage.mockResolvedValue({ ok: true });
+
+    const req = new Request("http://localhost/api/moderation/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId: "msg-1" }),
+    });
+
+    await POST(req);
+    const call = mockApproveMessage.mock.calls[0][1] as { override?: boolean };
+    expect(call.override).toBeUndefined();
+  });
+
   it("returns 400 when message is not pending", async () => {
     mockApproveMessage.mockResolvedValue({
       ok: false,

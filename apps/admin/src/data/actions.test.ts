@@ -131,7 +131,7 @@ describe("approveMessage", () => {
     expect(result).toEqual({ ok: false, error: "Message not found" });
   });
 
-  it("returns error when message is not pending", async () => {
+  it("returns error when message is already approved", async () => {
     const db = makeFakeDb();
     db.setSelectResult({ id: "msg-1", moderation_status: "approved" });
 
@@ -140,9 +140,87 @@ describe("approveMessage", () => {
       actor: "admin@test.com",
     });
 
+    expect(result).toEqual({ ok: false, error: "Already approved" });
+  });
+
+  it("returns error when approving a denied message without override", async () => {
+    const db = makeFakeDb();
+    db.setSelectResult({
+      id: "msg-1",
+      moderation_status: "denied",
+      moderated_by: "system:auto-mod@v1",
+    });
+
+    const result = await approveMessage(db as never, {
+      messageId: "msg-1",
+      actor: "admin@test.com",
+    });
+
     expect(result).toEqual({
       ok: false,
-      error: "Message is not pending (current status: approved)",
+      error: "Message is not pending (current status: denied)",
+    });
+  });
+
+  it("override=true succeeds on a system-denied message and clears auto_action", async () => {
+    const db = makeFakeDb();
+    db.setSelectResult({
+      id: "msg-9",
+      content: "hello",
+      moderation_status: "denied",
+      moderated_by: "system:auto-mod@v1",
+    });
+
+    const result = await approveMessage(db as never, {
+      messageId: "msg-9",
+      actor: "admin@test.com",
+      override: true,
+    });
+
+    expect(result).toEqual({ ok: true });
+
+    const updateOp = db.ops.find((op) => op.op === "update");
+    const updateValues = (updateOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(updateValues).toMatchObject({
+      moderation_status: "approved",
+      moderated_by: "admin@test.com",
+      denied_at: null,
+      auto_action: null,
+      auto_action_reason: null,
+    });
+
+    const insertOp = db.ops.find((op) => op.op === "insert");
+    const insertValues = (insertOp?.args as unknown[])?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(insertValues).toMatchObject({
+      action: "approved",
+      actor: "admin@test.com",
+      reason: "override:auto-deny",
+    });
+  });
+
+  it("override=true fails on a human-denied message", async () => {
+    const db = makeFakeDb();
+    db.setSelectResult({
+      id: "msg-7",
+      moderation_status: "denied",
+      moderated_by: "mod@example.com",
+    });
+
+    const result = await approveMessage(db as never, {
+      messageId: "msg-7",
+      actor: "admin@test.com",
+      override: true,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Cannot override a human denial via this path",
     });
   });
 

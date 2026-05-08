@@ -13,7 +13,7 @@ export interface Message {
   normalized_content: string | null;
   content_hash: string | null;
   risk_score: number | null;
-  risk_labels: Record<string, unknown> | null;
+  risk_labels: { category: string; score: number }[] | null;
   auto_action: "denied" | "cleared" | "flagged" | null;
   auto_action_reason: string | null;
   scored_at: string | null;

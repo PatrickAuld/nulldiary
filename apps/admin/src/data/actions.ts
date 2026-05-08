@@ -8,7 +8,7 @@ export async function approveMessage(
 ): Promise<ModerationResult> {
   const { data: message, error: selectError } = await db
     .from("messages")
-    .select("id, content, moderation_status")
+    .select("id, content, moderation_status, moderated_by")
     .eq("id", input.messageId)
     .single();
 
@@ -17,22 +17,46 @@ export async function approveMessage(
   }
   if (selectError) throw selectError;
 
-  if (message.moderation_status !== "pending") {
-    return {
-      ok: false,
-      error: `Message is not pending (current status: ${message.moderation_status})`,
-    };
+  const isOverride = input.override === true;
+  const isSystemDenied =
+    message.moderation_status === "denied" &&
+    typeof message.moderated_by === "string" &&
+    message.moderated_by.startsWith("system:");
+
+  if (message.moderation_status === "approved") {
+    return { ok: false, error: "Already approved" };
+  }
+  if (message.moderation_status === "denied") {
+    if (!isOverride) {
+      return {
+        ok: false,
+        error: `Message is not pending (current status: ${message.moderation_status})`,
+      };
+    }
+    if (!isSystemDenied) {
+      return {
+        ok: false,
+        error: "Cannot override a human denial via this path",
+      };
+    }
+  }
+
+  const updateValues: Record<string, unknown> = {
+    moderation_status: "approved",
+    approved_at: new Date().toISOString(),
+    moderated_by: input.actor,
+    edited_content:
+      input.editedContent?.trim() || (message.content ?? "").trim() || null,
+  };
+  if (isOverride && isSystemDenied) {
+    updateValues.denied_at = null;
+    updateValues.auto_action = null;
+    updateValues.auto_action_reason = null;
   }
 
   const { error: updateError } = await db
     .from("messages")
-    .update({
-      moderation_status: "approved",
-      approved_at: new Date().toISOString(),
-      moderated_by: input.actor,
-      edited_content:
-        input.editedContent?.trim() || (message.content ?? "").trim() || null,
-    })
+    .update(updateValues)
     .eq("id", input.messageId);
 
   if (updateError) throw updateError;
@@ -42,7 +66,9 @@ export async function approveMessage(
     message_id: input.messageId,
     action: "approved",
     actor: input.actor,
-    reason: input.reason ?? null,
+    reason:
+      input.reason ??
+      (isOverride && isSystemDenied ? "override:auto-deny" : null),
   });
 
   if (insertError) throw insertError;

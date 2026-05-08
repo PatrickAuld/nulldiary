@@ -17,7 +17,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const body = await req.json();
-  const { messageId, reason, editedContent } = body;
+  const { messageId, reason, editedContent, override } = body;
 
   if (!messageId || typeof messageId !== "string") {
     return NextResponse.json(
@@ -41,6 +41,7 @@ export async function POST(req: Request): Promise<Response> {
       actor,
       reason,
       editedContent: editedContent?.trim() || undefined,
+      override: override === true ? true : undefined,
     });
 
     if (!result.ok) {
