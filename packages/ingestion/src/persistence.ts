@@ -3,6 +3,7 @@ import { uuidv7 } from "uuidv7";
 import { normalizeMessage, hashContent } from "./normalize.js";
 import { randomShortId } from "./short-id.js";
 import { extractOriginatingModel } from "./extract-model.js";
+import { extractSeedMetadata } from "./extract-seed.js";
 import type { RawRequest, ParseResult } from "./types.js";
 
 export async function persistIngestion(
@@ -20,6 +21,9 @@ export async function persistIngestion(
 
     const originatingModel = extractOriginatingModel(raw.headers);
 
+    const seed = extractSeedMetadata(raw.headers);
+    const metadata: Record<string, unknown> = seed ? { seed } : {};
+
     // Generate a short, shareable ID for public URLs.
     // Retry a few times on the extremely unlikely chance of collision.
     //
@@ -35,7 +39,7 @@ export async function persistIngestion(
         content: parsed.message,
         normalized_content: normalized,
         content_hash: contentHash,
-        metadata: {},
+        metadata,
         moderation_status: "pending",
         short_id: shortId,
         originating_model: originatingModel,
@@ -53,7 +57,7 @@ export async function persistIngestion(
           content: parsed.message,
           normalized_content: normalized,
           content_hash: contentHash,
-          metadata: {},
+          metadata,
           moderation_status: "pending",
         });
 

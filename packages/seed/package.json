@@ -1,0 +1,26 @@
+{
+  "name": "@nulldiary/seed",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "seed": "./bin/seed.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx bin/seed.ts",
+    "seed:smoke": "tsx bin/seed.ts --batch=ops/seeds/smoke.yaml"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  }
+}
