@@ -1,0 +1,12 @@
+node_modules
+**/dist/
+**/.next/
+**/.open-next/
+**/.vercel/
+**/.astro/
+pnpm-lock.yaml
+
+# Spec and plan documents are wrapped manually and contain code blocks that
+# fight Prettier's wrap settings. They are working documents, not code.
+docs/superpowers/specs/
+docs/superpowers/plans/
