@@ -50,6 +50,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
           rel="stylesheet"
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={`${siteTitle} RSS feed`}
+          href="/feed.xml"
+        />
       </head>
       <body>{children}</body>
     </html>
