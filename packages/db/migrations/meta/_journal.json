@@ -71,6 +71,13 @@
       "when": 1778219985758,
       "tag": "0009_originating_model",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1778649600000,
+      "tag": "0010_page_views",
+      "breakpoints": true
     }
   ]
 }

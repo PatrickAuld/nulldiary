@@ -109,6 +109,17 @@ export const featuredSetMessages = pgTable("featured_set_messages", {
     .notNull(),
 });
 
+export const pageViews = pgTable("page_views", {
+  id: uuid("id").primaryKey(),
+  receivedAt: timestamp("received_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  path: text("path").notNull(),
+  referer: text("referer"),
+  uaClass: text("ua_class"),
+  host: text("host"),
+});
+
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id").primaryKey(),
   userId: uuid("user_id").notNull().unique(),

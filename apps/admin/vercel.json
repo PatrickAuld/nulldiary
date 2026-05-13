@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/digest?mode=daily",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-page-views",
+      "schedule": "0 3 * * *"
     }
   ]
 }

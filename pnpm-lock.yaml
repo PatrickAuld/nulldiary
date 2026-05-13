@@ -78,6 +78,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.4(react@19.2.4)
+      uuidv7:
+        specifier: ^1.0.1
+        version: 1.1.0
     devDependencies:
       '@types/node':
         specifier: 25.2.0

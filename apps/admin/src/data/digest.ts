@@ -1,4 +1,5 @@
 import type { Db } from "@nulldiary/db";
+import { fetchTopReferrers, type RefererBucket } from "./page-views.js";
 
 export interface SubmissionBreakdown {
   total: number;
@@ -19,6 +20,7 @@ export interface DailyDigest {
   cumulative_approved: number;
   anomalies: string[];
   baseline_median_last_7d: number;
+  top_referrers: RefererBucket[];
 }
 
 interface MessageRow {
@@ -281,6 +283,13 @@ export async function buildDailyDigest(
   const rows = await listMessagesInWindow(db, windowStart, windowEnd);
   const approvalStats = await approvalRateInWindow(db, windowStart, windowEnd);
   const baseline_median = await dailySubmissionBaseline(db, windowStart, 7);
+  let top_referrers: RefererBucket[] = [];
+  try {
+    top_referrers = await fetchTopReferrers(db, windowStart, 5);
+  } catch {
+    // page_views table may not exist on older DBs; degrade gracefully.
+    top_referrers = [];
+  }
 
   const submissions = breakdownSubmissions(rows);
   const mostRecent = rows.length > 0 ? rows[rows.length - 1].created_at : null;
@@ -305,6 +314,7 @@ export async function buildDailyDigest(
     cumulative_approved,
     anomalies,
     baseline_median_last_7d: baseline_median,
+    top_referrers,
   };
 }
 
@@ -354,11 +364,17 @@ export function renderDigestText(
     lines.push("", "no anomalies");
   }
 
-  // Top referrers section: deferred to Layer 3 (no page_views table yet).
-  lines.push(
-    "",
-    "top referrers (last 24h): (deferred — page_views/referrer source ships in Layer 3)",
-  );
+  if (digest.top_referrers.length > 0) {
+    lines.push("", "top referrers (last 24h):");
+    for (const r of digest.top_referrers) {
+      const pct = (r.percent * 100).toFixed(1);
+      lines.push(
+        `  ${r.count.toString().padStart(4)}  ${pct.padStart(5)}%  ${r.host}${r.path}`,
+      );
+    }
+  } else {
+    lines.push("", "top referrers (last 24h): (none recorded)");
+  }
 
   const text = lines.join("\n");
   const html = `<pre style="font-family:monospace;white-space:pre-wrap">${escapeHtml(text)}</pre>`;
