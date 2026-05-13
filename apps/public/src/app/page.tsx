@@ -48,7 +48,7 @@ export default async function HomePage() {
     <TerminalFrame title="~/nulldiary — confessions.log">
       <div className="login-line">Last login: {lastLogin} on ttys003</div>
       <div className="banner-row">
-        <span className="banner">∅ tail -f /var/log/confessions</span>
+        <span className="banner">∅ cat /var/log/confessions/*</span>
         <span className="nav-link">
           [<a href="/about">man nulldiary</a>]
         </span>
