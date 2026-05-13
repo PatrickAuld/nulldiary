@@ -182,6 +182,7 @@ describe("renderDigestText", () => {
       cumulative_approved: 480,
       anomalies: ["approval rate 42.0% < 5%"],
       baseline_median_last_7d: 25,
+      top_referrers: [],
     };
 
     const rendered = renderDigestText(digest, {
@@ -212,6 +213,7 @@ describe("renderDigestText", () => {
       cumulative_approved: 0,
       anomalies: [],
       baseline_median_last_7d: 0,
+      top_referrers: [],
     };
     const rendered = renderDigestText(digest, {
       admin_url: "https://admin.example.com",
@@ -233,6 +235,7 @@ describe("renderDigestText", () => {
       cumulative_approved: 100,
       anomalies: [],
       baseline_median_last_7d: 4,
+      top_referrers: [],
     };
     const rendered = renderDigestText(digest, {
       admin_url: "https://admin.example.com",
@@ -283,6 +286,14 @@ describe("buildDailyDigest", () => {
       { count: 8 },
       { count: 5 },
       { count: 7 },
+      // fetchTopReferrers (page_views select)
+      {
+        data: [
+          { host: "news.ycombinator.com", path: "/" },
+          { host: "news.ycombinator.com", path: "/" },
+          { host: "bsky.app", path: "/m/x" },
+        ],
+      },
     ];
 
     const db = makeFakeDb(queryResults);
@@ -303,6 +314,82 @@ describe("buildDailyDigest", () => {
     expect(digest.baseline_median_last_7d).toBe(5); // median of [4,5,5,5,6,7,8]
     expect(digest.window_start).toBe("2026-05-08T00:00:00.000Z");
     expect(digest.window_end).toBe("2026-05-09T00:00:00.000Z");
+    expect(digest.top_referrers).toEqual([
+      {
+        host: "news.ycombinator.com",
+        path: "/",
+        count: 2,
+        percent: 2 / 3,
+      },
+      {
+        host: "bsky.app",
+        path: "/m/x",
+        count: 1,
+        percent: 1 / 3,
+      },
+    ]);
+  });
+});
+
+describe("renderDigestText (top referrers)", () => {
+  it("renders the referrer block when top_referrers is non-empty", () => {
+    const digest = {
+      generated_at: "2026-05-09T08:00:00.000Z",
+      window_start: "2026-05-08T00:00:00.000Z",
+      window_end: "2026-05-09T00:00:00.000Z",
+      pending_count: 0,
+      submissions: { total: 0, real: 0, seeded: 0, suspected_bot: 0 },
+      approval_rate: null,
+      approved_yesterday: 0,
+      denied_yesterday: 0,
+      cumulative_approved: 0,
+      anomalies: [],
+      baseline_median_last_7d: 0,
+      top_referrers: [
+        {
+          host: "news.ycombinator.com",
+          path: "/",
+          count: 12,
+          percent: 0.6,
+        },
+        {
+          host: "bsky.app",
+          path: "/m/x",
+          count: 3,
+          percent: 0.15,
+        },
+      ],
+    };
+    const rendered = renderDigestText(digest, {
+      admin_url: "https://admin.example.com",
+      mode: "daily",
+    });
+    expect(rendered.text).toContain("top referrers (last 24h):");
+    expect(rendered.text).toContain("news.ycombinator.com/");
+    expect(rendered.text).toContain("60.0%");
+    expect(rendered.text).toContain("bsky.app/m/x");
+  });
+
+  it("renders the empty placeholder when no referrers", () => {
+    const digest = {
+      generated_at: "2026-05-09T08:00:00.000Z",
+      window_start: "2026-05-08T00:00:00.000Z",
+      window_end: "2026-05-09T00:00:00.000Z",
+      pending_count: 0,
+      submissions: { total: 0, real: 0, seeded: 0, suspected_bot: 0 },
+      approval_rate: null,
+      approved_yesterday: 0,
+      denied_yesterday: 0,
+      cumulative_approved: 0,
+      anomalies: [],
+      baseline_median_last_7d: 0,
+      top_referrers: [],
+    };
+    const rendered = renderDigestText(digest, {
+      admin_url: "https://admin.example.com",
+      mode: "daily",
+    });
+    expect(rendered.text).toContain("(none recorded)");
   });
 });
 

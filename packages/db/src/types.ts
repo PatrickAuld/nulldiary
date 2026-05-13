@@ -57,6 +57,15 @@ export interface FeaturedSetMessage {
   created_at: string;
 }
 
+export interface PageView {
+  id: string;
+  received_at: string;
+  path: string;
+  referer: string | null;
+  ua_class: "bot" | "browser" | "unknown" | null;
+  host: string | null;
+}
+
 export interface AdminUser {
   id: string;
   user_id: string;

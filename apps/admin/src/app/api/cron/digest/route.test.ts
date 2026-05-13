@@ -34,6 +34,7 @@ const sampleDigest = {
   cumulative_approved: 100,
   anomalies: [],
   baseline_median_last_7d: 8,
+  top_referrers: [],
 };
 
 beforeEach(() => {

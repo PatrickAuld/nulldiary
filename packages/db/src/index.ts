@@ -6,4 +6,5 @@ export type {
   FeaturedSet,
   FeaturedSetMessage,
   AdminUser,
+  PageView,
 } from "./types.js";
