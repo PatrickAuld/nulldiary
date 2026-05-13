@@ -955,3 +955,204 @@ td {
   background: var(--blue-dim);
   color: var(--text-primary);
 }
+
+/* --- Seed review --- */
+.seed-review {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--header-height) - var(--nav-height));
+}
+
+.seed-review__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.seed-review__header h1 {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.seed-review__batch {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.seed-review__batch code {
+  color: var(--text-primary);
+}
+
+.seed-review__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.seed-review__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.seed-review__meta div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.seed-review__meta dt {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.65rem;
+}
+
+.seed-review__meta dd {
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.seed-review__content {
+  font-family: var(--font-ui);
+  font-size: 1.4rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: var(--space-6);
+  white-space: pre-wrap;
+  min-height: 240px;
+}
+
+.seed-review__cursor {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.seed-review__footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.seed-review__hint {
+  color: var(--text-muted);
+}
+
+.seed-review__error {
+  color: var(--red);
+}
+
+.seed-review__status {
+  color: var(--green);
+}
+
+.seed-review__done,
+.seed-review-empty {
+  padding: var(--space-8) var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.seed-review__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 50;
+}
+
+.seed-review__overlay-card {
+  max-width: 480px;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.seed-review__overlay-card h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.seed-review__overlay-card input[type="text"] {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  border-radius: var(--radius-sm);
+}
+
+.seed-review__overlay-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.seed-review__shortcuts {
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.seed-review__shortcuts td {
+  padding: var(--space-1) var(--space-3);
+  vertical-align: middle;
+}
+
+.seed-review__shortcuts kbd {
+  display: inline-block;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
