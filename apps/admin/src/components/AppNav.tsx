@@ -55,6 +55,25 @@ const navItems = [
     ),
   },
   {
+    href: "/seed-review",
+    label: "Seed",
+    icon: (
+      <svg
+        className="bottom-nav__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 2v8" />
+        <path d="M5 9c0 4 3 7 7 7s7-3 7-7" />
+        <path d="M5 22h14" />
+      </svg>
+    ),
+  },
+  {
     href: "/db-ops",
     label: "DB Ops",
     icon: (

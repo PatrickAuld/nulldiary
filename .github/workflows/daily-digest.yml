@@ -1,0 +1,43 @@
+# Fallback driver for the daily-digest cron, used when Vercel Cron is
+# unavailable on the project's plan or when the team prefers to centralize
+# scheduled jobs in GitHub Actions.
+#
+# Default state: DISABLED (workflow_dispatch only). Enable the schedule by
+# uncommenting the `schedule` block below. The Vercel Cron config in
+# `apps/admin/vercel.json` is the primary driver; running both will simply
+# send the digest twice on the firing schedule.
+#
+# Required repository secrets:
+#   ADMIN_BASE_URL  — e.g. https://admin.nulldiary.io
+#   CRON_SECRET     — must match the value in the admin app environment
+
+name: Daily digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "daily or weekly"
+        required: false
+        default: "daily"
+  # schedule:
+  #   - cron: "0 8 * * *"
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger digest endpoint
+        env:
+          ADMIN_BASE_URL: ${{ secrets.ADMIN_BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          MODE: ${{ github.event.inputs.mode || 'daily' }}
+        run: |
+          if [ -z "${ADMIN_BASE_URL}" ] || [ -z "${CRON_SECRET}" ]; then
+            echo "ADMIN_BASE_URL or CRON_SECRET secret missing"
+            exit 1
+          fi
+          curl -sS -f \
+            -X POST \
+            -H "authorization: Bearer ${CRON_SECRET}" \
+            "${ADMIN_BASE_URL}/api/cron/digest?mode=${MODE}"
