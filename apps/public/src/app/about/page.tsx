@@ -83,7 +83,8 @@ export default function AboutPage() {
         <div className="man-section-title">SEE ALSO</div>
         <div className="man-section-body">
           <p>
-            <code>cat(1)</code>, <code>tail(1)</code>, <code>/dev/null</code>
+            <code>cat(1)</code>, <code>tail(1)</code>, <code>/dev/null</code>,{" "}
+            <a href="https://patrickauld.com">patrickauld.com</a>
           </p>
         </div>
       </div>
