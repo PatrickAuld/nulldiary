@@ -112,6 +112,7 @@ Choose one of the following approaches and standardize it across services:
 
 - **Endpoint**: `/s/*` route.
 - **Methods**: Accept all HTTP verbs.
+- **Author identity**: Optional `x-author` header, stored with the originating model/agent identity.
 - **Payload sources**:
   - Path: `/s/<message>`
   - Query: `/s?message=...`

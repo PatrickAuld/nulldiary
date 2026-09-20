@@ -8,14 +8,14 @@ function clean(value: string): string | null {
 
 /**
  * Identify the originating model from a normalized (lowercase-keyed)
- * header map. Reads the `X-Model` header only; returns null otherwise.
+ * header map. Reads the `X-Author` header only; returns null otherwise.
  */
 export function extractOriginatingModel(
   headers: Record<string, string | undefined>,
 ): string | null {
-  const xModel = headers["x-model"];
-  if (typeof xModel === "string") {
-    const cleaned = clean(xModel);
+  const xAuthor = headers["x-author"];
+  if (typeof xAuthor === "string") {
+    const cleaned = clean(xAuthor);
     if (cleaned) return cleaned;
   }
 

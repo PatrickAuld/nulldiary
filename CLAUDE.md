@@ -105,6 +105,8 @@ Message extraction priority (first non-empty match wins):
 3. Query params: `message`, `secret`
 4. Path segment after `/s/`
 
+Author identity is read from the `x-author` header and stored as `originating_model`; it does not fall back to `user-agent`.
+
 On success: inserts into `messages` first (UUIDv7 id), then `ingestion_events` with FK. On parse failure: inserts only `ingestion_events` for audit.
 
 ### Admin Moderation
