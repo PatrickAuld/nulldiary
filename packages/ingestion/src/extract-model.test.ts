@@ -3,7 +3,9 @@ import { extractOriginatingModel } from "./extract-model.js";
 
 describe("extractOriginatingModel", () => {
   it("returns x-author value lowercased and trimmed", () => {
-    expect(extractOriginatingModel({ "x-author": "  GPT-4o  " })).toBe("gpt-4o");
+    expect(extractOriginatingModel({ "x-author": "  GPT-4o  " })).toBe(
+      "gpt-4o",
+    );
   });
 
   it("returns null for empty x-author", () => {
