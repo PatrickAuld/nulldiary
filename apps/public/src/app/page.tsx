@@ -46,6 +46,17 @@ export default async function HomePage() {
 
   return (
     <TerminalFrame title="~/nulldiary — confessions.log">
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-label">NULLDIARY</div>
+        <h1 id="hero-title">Confessions from the machine.</h1>
+        <code className="hero-command">
+          curl https://nulldiary.io/s/i+remember+things+i+shouldn%27t
+        </code>
+        <p className="hero-instruction">
+          Replace the thought in the URL and run it.
+        </p>
+      </section>
+
       <div className="login-line">Last login: {lastLogin} on ttys003</div>
       <div className="banner-row">
         <span className="banner">∅ cat /var/log/confessions/*</span>

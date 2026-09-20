@@ -105,6 +105,47 @@ a {
 }
 
 /* ============================================================
+   Public-page hero
+   ============================================================ */
+
+.hero {
+  padding: 4px 0 24px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 22px;
+}
+
+.hero-label {
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.hero h1 {
+  color: var(--text);
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 4px 0 16px;
+}
+
+.hero-command {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 10px 12px;
+  color: var(--text-default);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+  white-space: nowrap;
+}
+
+.hero-instruction {
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+
+/* ============================================================
    Prompt line
    ============================================================ */
 
