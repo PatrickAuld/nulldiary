@@ -9,6 +9,9 @@ import {
   formatDetailTimestamp,
   getCatId,
 } from "@/lib/format";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const revalidate = 600;
 
@@ -24,12 +27,14 @@ export async function generateMetadata({
 
   const display = message.edited_content ?? message.content;
   const desc = truncateForDescription(display, 220);
-  const canonical = message.short_id
-    ? `/m/${message.short_id}`
-    : `/messages/${id}`;
-  const image = message.short_id
-    ? `/og/m/${message.short_id}`
-    : `/og/messages/${id}`;
+  const canonicalPath = message.short_id
+    ? `/m/${encodeURIComponent(message.short_id)}`
+    : `/messages/${encodeURIComponent(id)}`;
+  const imagePath = message.short_id
+    ? `/og/m/${encodeURIComponent(message.short_id)}`
+    : `/og/messages/${encodeURIComponent(id)}`;
+  const canonical = new URL(canonicalPath, siteUrl).toString();
+  const image = new URL(imagePath, siteUrl).toString();
 
   return {
     title: desc,
@@ -40,7 +45,16 @@ export async function generateMetadata({
       description: desc,
       url: canonical,
       type: "article",
-      images: [{ url: image, width: 1200, height: 630, alt: desc }],
+      images: [
+        {
+          url: image,
+          secureUrl: image,
+          type: "image/png",
+          width: 1200,
+          height: 630,
+          alt: desc,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
