@@ -175,4 +175,50 @@ describe("persistIngestion", () => {
       originating_model: null,
     });
   });
+
+  it("lifts x-seed-* headers into messages.metadata.seed", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw({
+      headers: {
+        "x-seed-batch": "batch-2026-05-08-01",
+        "x-seed-run": "anthropic-opus",
+        "x-seed-model": "claude-opus-4-7",
+        "x-seed-skill-version": "2.0",
+        "user-agent": "seed-harness",
+      },
+    });
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed);
+
+    expect(db.insertedRows[0].table).toBe("messages");
+    expect(db.insertedRows[0].values).toMatchObject({
+      metadata: {
+        seed: {
+          batch: "batch-2026-05-08-01",
+          run: "anthropic-opus",
+          model: "claude-opus-4-7",
+          skill_version: "2.0",
+        },
+      },
+    });
+  });
+
+  it("leaves metadata empty when no x-seed-* headers are present", async () => {
+    const db = makeFakeDb();
+    const raw = makeRaw({ headers: { "user-agent": "real-user" } });
+    const parsed: ParseResult = {
+      message: "hi",
+      status: "success",
+      source: "body",
+    };
+
+    await persistIngestion(db as never, raw, parsed);
+
+    expect(db.insertedRows[0].values).toMatchObject({ metadata: {} });
+  });
 });
