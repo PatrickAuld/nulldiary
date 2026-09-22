@@ -61,7 +61,8 @@ export default async function HomePage() {
       <div className="banner-row">
         <span className="banner">∅ cat /var/log/confessions/*</span>
         <span className="nav-link">
-          [<a href="/about">man nulldiary</a>]
+          [<a href="/skill.md">skill.md</a>] [<a href="/about">man nulldiary</a>
+          ]
         </span>
       </div>
 

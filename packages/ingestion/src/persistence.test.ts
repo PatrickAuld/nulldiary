@@ -141,10 +141,10 @@ describe("persistIngestion", () => {
     );
   });
 
-  it("writes originating_model from x-model header on the messages insert", async () => {
+  it("writes originating_model from x-author header on the messages insert", async () => {
     const db = makeFakeDb();
     const raw = makeRaw({
-      headers: { "x-model": "gpt-4o", "user-agent": "ignored" },
+      headers: { "x-author": "gpt-4o", "user-agent": "ignored" },
     });
     const parsed: ParseResult = {
       message: "hi",
