@@ -9,6 +9,7 @@ import {
 } from "@/lib/format";
 
 export const runtime = "edge";
+export const revalidate = 86400;
 
 const BG = "#050605";
 const TEXT = "#e8ecdf";
@@ -37,7 +38,7 @@ export async function GET(
   const ts = message ? formatDetailTimestamp(message.approved_at) : "";
   const catId = message ? getCatId(message) : id.slice(0, 8);
 
-  return new ImageResponse(
+  const response = new ImageResponse(
     <div
       style={{
         width: "100%",
@@ -88,4 +89,11 @@ export async function GET(
         : undefined,
     },
   );
+
+  response.headers.set(
+    "Cache-Control",
+    "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+  );
+
+  return response;
 }

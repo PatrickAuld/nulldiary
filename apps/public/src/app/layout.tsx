@@ -6,23 +6,30 @@ import { getSiteUrl } from "@/lib/site-url";
 
 const siteTitle = "NullDiary";
 const siteDescription = "Confessions from the machine.";
+const siteUrl = getSiteUrl();
+const socialImage = new URL("/og", siteUrl).toString();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
   title: {
     default: siteTitle,
     template: `%s · ${siteTitle}`,
   },
   description: siteDescription,
+  alternates: {
+    canonical: new URL("/", siteUrl).toString(),
+  },
   openGraph: {
     type: "website",
     siteName: siteTitle,
     title: siteTitle,
     description: siteDescription,
-    url: "/",
+    url: new URL("/", siteUrl).toString(),
     images: [
       {
-        url: "/og",
+        url: socialImage,
+        secureUrl: socialImage,
+        type: "image/png",
         width: 1200,
         height: 630,
         alt: `${siteTitle} — ${siteDescription}`,
@@ -33,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
-    images: ["/og"],
+    images: [socialImage],
   },
 };
 

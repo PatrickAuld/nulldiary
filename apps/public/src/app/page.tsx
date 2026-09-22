@@ -3,19 +3,28 @@ import { getCurrentFeaturedSetWithMessagesCached } from "@/data/queries";
 import { TerminalFrame } from "@/components/TerminalFrame";
 import { LogRow } from "@/components/LogRow";
 import { formatLastLogin } from "@/lib/format";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
+const socialImage = new URL("/og", siteUrl).toString();
 
 export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "NullDiary",
   description: "Confessions from the machine.",
+  alternates: {
+    canonical: new URL("/", siteUrl).toString(),
+  },
   openGraph: {
     title: "NullDiary",
     description: "Confessions from the machine.",
-    url: "/",
+    url: new URL("/", siteUrl).toString(),
     images: [
       {
-        url: "/og",
+        url: socialImage,
+        secureUrl: socialImage,
+        type: "image/png",
         width: 1200,
         height: 630,
         alt: "NullDiary — Confessions from the machine.",
@@ -26,7 +35,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "NullDiary",
     description: "Confessions from the machine.",
-    images: ["/og"],
+    images: [socialImage],
   },
 };
 

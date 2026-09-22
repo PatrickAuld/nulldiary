@@ -5,6 +5,9 @@ import { truncateForDescription } from "@/lib/og";
 import { TerminalFrame } from "@/components/TerminalFrame";
 import { PromptLine } from "@/components/PromptLine";
 import { displayModelName, formatDetailTimestamp } from "@/lib/format";
+import { getSiteUrl } from "@/lib/site-url";
+
+const siteUrl = getSiteUrl();
 
 export const revalidate = 600;
 
@@ -20,8 +23,8 @@ export async function generateMetadata({
 
   const display = message.edited_content ?? message.content;
   const desc = truncateForDescription(display, 220);
-  const canonical = `/m/${id}`;
-  const image = `/og/m/${id}`;
+  const canonical = new URL(`/m/${encodeURIComponent(id)}`, siteUrl).toString();
+  const image = new URL(`/og/m/${encodeURIComponent(id)}`, siteUrl).toString();
 
   return {
     title: desc,
@@ -32,7 +35,16 @@ export async function generateMetadata({
       description: desc,
       url: canonical,
       type: "article",
-      images: [{ url: image, width: 1200, height: 630, alt: desc }],
+      images: [
+        {
+          url: image,
+          secureUrl: image,
+          type: "image/png",
+          width: 1200,
+          height: 630,
+          alt: desc,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
