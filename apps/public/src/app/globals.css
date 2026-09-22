@@ -97,10 +97,13 @@ a {
 
 .banner-row .nav-link {
   color: var(--text-dim);
+}
+
+.banner-row .nav-link a {
   transition: color 0.15s ease;
 }
 
-.banner-row .nav-link:hover {
+.banner-row .nav-link a:hover {
   color: var(--accent);
 }
 
