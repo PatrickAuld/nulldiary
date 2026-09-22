@@ -192,6 +192,15 @@ Implement a deterministic priority order for extraction:
   - Or scheduled nightly rebuild.
 - Publish static assets to CDN or static hosting.
 
+### 5.4 Content Negotiation
+
+- Public document pages support `text/html` and `text/markdown` representations.
+- Requests with `Accept: text/markdown` receive Markdown without needing to parse the HTML document.
+- HTML remains the default when `Accept` is absent or only contains wildcards, preserving normal browser and `curl` behavior.
+- Requests that do not accept either representation receive `406 Not Acceptable`.
+- Markdown responses include `Vary: Accept` and are not stored by intermediaries; HTML keeps the framework's normal page caching behavior.
+- Ingestion (`/s/*`) and image routes (`/og/*`) are not document pages and keep their existing response types.
+
 ## 6) Shared Types & Validation
 
 ### 6.1 Shared Schemas
