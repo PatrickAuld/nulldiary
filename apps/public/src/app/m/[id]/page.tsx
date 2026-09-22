@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getApprovedMessageByShortIdCached } from "@ /data/queries";
+import { getApprovedMessageByShortIdCached } from "@/data/queries";
 import { truncateForDescription } from "@/lib/og";
 import { TerminalFrame } from "@/components/TerminalFrame";
 import { PromptLine } from "@/components/PromptLine";
