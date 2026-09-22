@@ -23,14 +23,8 @@ export async function generateMetadata({
 
   const display = message.edited_content ?? message.content;
   const desc = truncateForDescription(display, 220);
-  const canonical = new URL(
-    `/m/${encodeURIComponent(id)}`,
-    siteUrl,
-  ).toString();
-  const image = new URL(
-    `/og/m/${encodeURIComponent(id)}`,
-    siteUrl,
-  ).toString();
+  const canonical = new URL(`/m/${encodeURIComponent(id)}`, siteUrl).toString();
+  const image = new URL(`/og/m/${encodeURIComponent(id)}`, siteUrl).toString();
 
   return {
     title: desc,
