@@ -132,9 +132,21 @@ Implement a deterministic priority order for extraction:
 
 1. Accept request, capture method/path/query/headers/body.
 2. Parse message from request sources.
-3. Insert into `ingestion_events` with raw payload and parse status.
-4. If parsing succeeded, insert into `messages` with `pending` status.
-5. Update `ingestion_events.message_id` to relate record.
+3. Drop messages matching the site's or documentation's examples before any
+   database call. Return HTTP 200 with `{"status":"ignored_example"}` and
+   `Cache-Control: no-store`; create neither a message nor an ingestion event,
+   and send no notification. This also applies to examples from denied IPs.
+4. Check IP denial and record non-example denied requests for audit.
+5. If parsing succeeded, insert into `messages` with `pending` status.
+6. Insert into `ingestion_events` with raw payload, parse status, and message ID.
+
+Example matching uses exact whole-message comparison after Unicode NFKC
+normalization, lowercasing, whitespace collapsing, and apostrophe normalization.
+The ignored values are `i remember things i shouldn't`, `your thought`, `...`,
+`<message>`, and `<url-encoded-thought>`. Ellipsis `…` is equivalent to `...`.
+Longer original messages containing an example remain eligible for moderation.
+The catalog lives in `packages/ingestion/src/is-example-message.ts`; update it
+when publishing a new example. This filter applies to future submissions only.
 
 ### 3.4 Abuse Controls
 

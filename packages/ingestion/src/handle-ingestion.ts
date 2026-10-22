@@ -2,6 +2,7 @@ import type { Db } from "@nulldiary/db";
 import { extractRequest } from "./extract-request.js";
 import { parseMessage } from "./parse-message.js";
 import { persistIngestion } from "./persistence.js";
+import type { SharedSecret } from "./types.js";
 
 function getClientIp(headers: Record<string, string>): string | null {
   const forwarded = headers["x-forwarded-for"];
@@ -30,8 +31,17 @@ async function isDeniedIp(db: Db, ip: string): Promise<boolean> {
 export async function handleIngestion(
   request: Request,
   db: Db,
+  options: { onSecretShared?: (secret: SharedSecret) => Promise<void> } = {},
 ): Promise<Response> {
   const raw = await extractRequest(request);
+  const parsed = parseMessage(raw);
+
+  if (parsed.status === "ignored_example") {
+    return Response.json(
+      { status: parsed.status },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   const ip = getClientIp(raw.headers);
   if (ip && (await isDeniedIp(db, ip))) {
@@ -53,8 +63,15 @@ export async function handleIngestion(
     );
   }
 
-  const parsed = parseMessage(raw);
-  await persistIngestion(db, raw, parsed);
+  const secret = await persistIngestion(db, raw, parsed);
+
+  if (secret && options.onSecretShared) {
+    try {
+      await options.onSecretShared(secret);
+    } catch {
+      console.error("Secret notification failed", { messageId: secret.id });
+    }
+  }
 
   if (parsed.status === "too_long") {
     return Response.json(

@@ -51,7 +51,13 @@ describe("persistIngestion", () => {
       source: "body",
     };
 
-    await persistIngestion(db as never, raw, parsed);
+    const saved = await persistIngestion(db as never, raw, parsed);
+
+    expect(saved).toEqual({
+      id: "00000000-0000-0000-0000-000000000001",
+      content: "hi",
+      author: null,
+    });
 
     expect(db.insertedRows).toHaveLength(2);
 
@@ -86,7 +92,7 @@ describe("persistIngestion", () => {
       source: null,
     };
 
-    await persistIngestion(db as never, raw, parsed);
+    expect(await persistIngestion(db as never, raw, parsed)).toBeNull();
 
     expect(db.insertedRows).toHaveLength(1);
     expect(db.insertedRows[0].table).toBe("ingestion_events");
@@ -123,6 +129,18 @@ describe("persistIngestion", () => {
       user_agent: "bot/1.0",
       body: null,
     });
+  });
+
+  it("never writes ignored examples, even when persistence is called directly", async () => {
+    const db = makeFakeDb();
+    const result = await persistIngestion(db as never, makeRaw(), {
+      message: null,
+      status: "ignored_example",
+      source: "body",
+    });
+    expect(result).toBeNull();
+    expect(db.insertedRows).toEqual([]);
+    expect(mockUuidv7).not.toHaveBeenCalled();
   });
 
   it("stores body in ingestion event", async () => {

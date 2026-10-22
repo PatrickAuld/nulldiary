@@ -96,7 +96,12 @@ The ingestion endpoint (`/s/*` in `apps/public/src/app/s/[...path]/route.ts`) ac
 
 1. `extractRequest(Request)` → `RawRequest` (normalize URL, headers, body)
 2. `parseMessage(RawRequest)` → `ParseResult` (extract message by priority)
-3. `persistIngestion(Db, RawRequest, ParseResult)` → insert into DB
+3. Drop `ignored_example` results with no database calls or notifications
+4. Check IP denial, then `persistIngestion(Db, RawRequest, ParseResult)` → insert into DB
+
+The example catalog is in `packages/ingestion/src/is-example-message.ts`. Update
+it when publishing new examples in the site or docs. Matching ignores case,
+whitespace, Unicode compatibility forms, and straight/curly apostrophe differences.
 
 Message extraction priority (first non-empty match wins):
 
