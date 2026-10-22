@@ -3,13 +3,13 @@ import { uuidv7 } from "uuidv7";
 import { normalizeMessage, hashContent } from "./normalize.js";
 import { randomShortId } from "./short-id.js";
 import { extractOriginatingModel } from "./extract-model.js";
-import type { RawRequest, ParseResult } from "./types.js";
+import type { RawRequest, ParseResult, SharedSecret } from "./types.js";
 
 export async function persistIngestion(
   db: Db,
   raw: RawRequest,
   parsed: ParseResult,
-): Promise<void> {
+): Promise<SharedSecret | null> {
   let messageId: string | null = null;
 
   if (parsed.status === "success") {
@@ -90,4 +90,12 @@ export async function persistIngestion(
     message_id: messageId,
   });
   if (error) throw error;
+
+  return messageId && parsed.status === "success"
+    ? {
+        id: messageId,
+        content: parsed.message,
+        author: extractOriginatingModel(raw.headers),
+      }
+    : null;
 }

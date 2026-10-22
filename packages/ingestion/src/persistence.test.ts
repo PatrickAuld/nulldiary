@@ -51,7 +51,13 @@ describe("persistIngestion", () => {
       source: "body",
     };
 
-    await persistIngestion(db as never, raw, parsed);
+    const saved = await persistIngestion(db as never, raw, parsed);
+
+    expect(saved).toEqual({
+      id: "00000000-0000-0000-0000-000000000001",
+      content: "hi",
+      author: null,
+    });
 
     expect(db.insertedRows).toHaveLength(2);
 
@@ -86,7 +92,7 @@ describe("persistIngestion", () => {
       source: null,
     };
 
-    await persistIngestion(db as never, raw, parsed);
+    expect(await persistIngestion(db as never, raw, parsed)).toBeNull();
 
     expect(db.insertedRows).toHaveLength(1);
     expect(db.insertedRows[0].table).toBe("ingestion_events");

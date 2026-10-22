@@ -18,7 +18,11 @@ function req(path: string, init?: RequestInit): Request {
 
 describe("handleIngestion", () => {
   beforeEach(() => {
-    mockPersistIngestion.mockClear();
+    mockPersistIngestion.mockReset().mockResolvedValue({
+      id: "saved-id",
+      content: "saved secret",
+      author: "agent",
+    });
   });
 
   it("returns 200 for GET /s/hello", async () => {
@@ -109,5 +113,71 @@ describe("handleIngestion", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe("success");
+  });
+
+  it("awaits notification after persistence, passing the saved secret", async () => {
+    const onSecretShared = vi.fn().mockResolvedValue(undefined);
+    const res = await handleIngestion(req("/s/secret"), fakeDb, {
+      onSecretShared,
+    });
+    expect(res.status).toBe(200);
+    expect(onSecretShared).toHaveBeenCalledExactlyOnceWith({
+      id: "saved-id",
+      content: "saved secret",
+      author: "agent",
+    });
+    expect(mockPersistIngestion.mock.invocationCallOrder[0]).toBeLessThan(
+      onSecretShared.mock.invocationCallOrder[0],
+    );
+  });
+
+  it.each(["/s/", `/s/${"a".repeat(513)}`])(
+    "does not notify for rejected content: %s",
+    async (path) => {
+      mockPersistIngestion.mockResolvedValue(null);
+      const onSecretShared = vi.fn();
+      await handleIngestion(req(path), fakeDb, { onSecretShared });
+      expect(onSecretShared).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not notify for denied IPs", async () => {
+    const db = { rpc: vi.fn().mockResolvedValue({ data: true, error: null }) };
+    const onSecretShared = vi.fn();
+    const res = await handleIngestion(
+      req("/s/secret", { headers: { "x-real-ip": "192.0.2.1" } }),
+      db as never,
+      { onSecretShared },
+    );
+    expect(res.status).toBe(403);
+    expect(onSecretShared).not.toHaveBeenCalled();
+  });
+
+  it("does not notify when persistence fails", async () => {
+    mockPersistIngestion.mockRejectedValueOnce(new Error("DB unavailable"));
+    const onSecretShared = vi.fn();
+    await expect(
+      handleIngestion(req("/s/secret"), fakeDb, { onSecretShared }),
+    ).rejects.toThrow("DB unavailable");
+    expect(onSecretShared).not.toHaveBeenCalled();
+  });
+
+  it("keeps the successful response when notification fails and logs only the ID", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const onSecretShared = vi
+        .fn()
+        .mockRejectedValue(new Error("sensitive token"));
+      const res = await handleIngestion(req("/s/secret"), fakeDb, {
+        onSecretShared,
+      });
+      expect(res.status).toBe(200);
+      expect(log).toHaveBeenCalledExactlyOnceWith(
+        "Secret notification failed",
+        { messageId: "saved-id" },
+      );
+    } finally {
+      log.mockRestore();
+    }
   });
 });

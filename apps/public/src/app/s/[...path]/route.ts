@@ -1,9 +1,10 @@
 import { handleIngestion } from "@nulldiary/ingestion";
 import { getDb } from "@/lib/db";
+import { notifyTelegram } from "@/lib/telegram";
 
 async function handler(request: Request) {
   const db = getDb();
-  return handleIngestion(request, db);
+  return handleIngestion(request, db, { onSecretShared: notifyTelegram });
 }
 
 export const GET = handler;

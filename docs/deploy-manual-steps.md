@@ -31,6 +31,14 @@ Both apps:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+Optional Telegram notifications (public project only):
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- `TELEGRAM_ADMIN_URL` (defaults to `https://admin.nulldiary.io`)
+
+See [Telegram setup](telegram-notifications.md) for bot creation and chat ID lookup.
+
 Admin auth (admin project):
 
 - `SUPABASE_ANON_KEY`

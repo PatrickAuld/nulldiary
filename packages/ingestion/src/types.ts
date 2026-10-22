@@ -7,6 +7,12 @@ export interface RawRequest {
   contentType: string | null;
 }
 
+export interface SharedSecret {
+  id: string;
+  content: string;
+  author: string | null;
+}
+
 export type ParseSource = "header" | "body" | "query" | "path" | "ip";
 
 export type ParseResult =
