@@ -19,4 +19,5 @@ export type ParseResult =
   | { message: string; status: "success"; source: ParseSource }
   | { message: null; status: "failed"; source: null }
   | { message: null; status: "too_long"; source: ParseSource }
+  | { message: null; status: "ignored_example"; source: ParseSource }
   | { message: null; status: "denied_ip"; source: "ip" };

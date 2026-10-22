@@ -34,6 +34,14 @@ export async function handleIngestion(
   options: { onSecretShared?: (secret: SharedSecret) => Promise<void> } = {},
 ): Promise<Response> {
   const raw = await extractRequest(request);
+  const parsed = parseMessage(raw);
+
+  if (parsed.status === "ignored_example") {
+    return Response.json(
+      { status: parsed.status },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   const ip = getClientIp(raw.headers);
   if (ip && (await isDeniedIp(db, ip))) {
@@ -55,7 +63,6 @@ export async function handleIngestion(
     );
   }
 
-  const parsed = parseMessage(raw);
   const secret = await persistIngestion(db, raw, parsed);
 
   if (secret && options.onSecretShared) {

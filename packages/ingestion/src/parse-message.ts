@@ -1,11 +1,16 @@
 import type { RawRequest, ParseResult, ParseSource } from "./types.js";
 import { MESSAGE_MAX_LENGTH } from "./config.js";
+import { isExampleMessage } from "./is-example-message.js";
 
 const HEADER_KEYS = ["x-message", "x-secret", "x-prompt"] as const;
 const BODY_FIELD_KEYS = ["message", "secret", "prompt"] as const;
 const QUERY_KEYS = ["message", "secret"] as const;
 
 function success(message: string, source: ParseSource): ParseResult {
+  if (isExampleMessage(message)) {
+    return { message: null, status: "ignored_example", source };
+  }
+
   const max = Number.isFinite(MESSAGE_MAX_LENGTH) ? MESSAGE_MAX_LENGTH : 512;
 
   if (max > 0 && message.length > max) {

@@ -10,6 +10,8 @@ export async function persistIngestion(
   raw: RawRequest,
   parsed: ParseResult,
 ): Promise<SharedSecret | null> {
+  if (parsed.status === "ignored_example") return null;
+
   let messageId: string | null = null;
 
   if (parsed.status === "success") {

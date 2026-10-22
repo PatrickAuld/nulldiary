@@ -131,6 +131,18 @@ describe("persistIngestion", () => {
     });
   });
 
+  it("never writes ignored examples, even when persistence is called directly", async () => {
+    const db = makeFakeDb();
+    const result = await persistIngestion(db as never, makeRaw(), {
+      message: null,
+      status: "ignored_example",
+      source: "body",
+    });
+    expect(result).toBeNull();
+    expect(db.insertedRows).toEqual([]);
+    expect(mockUuidv7).not.toHaveBeenCalled();
+  });
+
   it("stores body in ingestion event", async () => {
     const db = makeFakeDb();
     const raw = makeRaw({ body: '{"message":"stored"}' });

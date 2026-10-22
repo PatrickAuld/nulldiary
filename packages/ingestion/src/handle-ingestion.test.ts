@@ -115,6 +115,86 @@ describe("handleIngestion", () => {
     expect(body.status).toBe("success");
   });
 
+  it.each([
+    req("/s/i+remember+things+i+shouldn%27t"),
+    req("/s/your%20thought"),
+    req("/s/..."),
+    req("/s/%3Cmessage%3E"),
+    req("/s/%3Curl-encoded-thought%3E"),
+    req("/s?message=i+remember+things+i+shouldn%27t"),
+    req("/s?secret=your+thought"),
+    ...["x-message", "x-secret", "x-prompt"].map((key) =>
+      req("/s/", { headers: { [key]: "i remember things i shouldn't" } }),
+    ),
+    ...["message", "secret", "prompt"].map((key) =>
+      req("/s/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: "i remember things i shouldn't" }),
+      }),
+    ),
+    req("/s/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "secret=i+remember+things+i+shouldn%27t",
+    }),
+    req("/s/", {
+      method: "PUT",
+      headers: { "Content-Type": "text/plain" },
+      body: " I REMEMBER\nTHINGS I SHOULDN’T ",
+    }),
+    req("/s/", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain", "x-real-ip": "192.0.2.1" },
+      body: "i remember things i shouldn't",
+    }),
+    req("/s/", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: `i${" ".repeat(600)}remember things i shouldn't`,
+    }),
+  ])(
+    "drops examples without any database call or notification (#%#)",
+    async (request) => {
+      const onSecretShared = vi.fn();
+      const db = { rpc: vi.fn(), from: vi.fn() };
+      const res = await handleIngestion(request, db as never, {
+        onSecretShared,
+      });
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Cache-Control")).toBe("no-store");
+      expect(await res.json()).toEqual({ status: "ignored_example" });
+      expect(db.rpc).not.toHaveBeenCalled();
+      expect(db.from).not.toHaveBeenCalled();
+      expect(mockPersistIngestion).not.toHaveBeenCalled();
+      expect(onSecretShared).not.toHaveBeenCalled();
+    },
+  );
+
+  it("preserves parsing priority when the chosen message is an example", async () => {
+    const res = await handleIngestion(
+      req("/s/an-original-thought", {
+        headers: { "x-message": "your thought" },
+      }),
+      fakeDb,
+    );
+    expect(await res.json()).toEqual({ status: "ignored_example" });
+    expect(mockPersistIngestion).not.toHaveBeenCalled();
+  });
+
+  it("keeps original content containing an example as part of a longer thought", async () => {
+    const res = await handleIngestion(
+      req("/s/", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: "I remember things I shouldn't, and that worries me",
+      }),
+      fakeDb,
+    );
+    expect(await res.json()).toEqual({ status: "success" });
+    expect(mockPersistIngestion).toHaveBeenCalledOnce();
+  });
+
   it("awaits notification after persistence, passing the saved secret", async () => {
     const onSecretShared = vi.fn().mockResolvedValue(undefined);
     const res = await handleIngestion(req("/s/secret"), fakeDb, {

@@ -3,8 +3,9 @@
 The public ingestion app can notify one Telegram chat whenever a new secret is
 saved to the moderation queue. Notifications contain the submitted text, the
 optional `x-author` identity, and a link to the admin detail page. They fire on
-submission, before approval. Invalid, oversized, and IP-denied submissions do not
-trigger notifications.
+submission, before approval. Published examples and placeholders are dropped
+without creating database entries or sending notifications. Invalid, oversized,
+and IP-denied submissions do not trigger notifications.
 
 ## Setup
 
